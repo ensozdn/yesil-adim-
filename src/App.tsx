@@ -359,7 +359,7 @@ export const App: React.FC = () => {
 
           <div className="sectionhead">
             <strong>Yıldız Ödülleri</strong>
-            <span className="small">Starbucks Rewards Modeli</span>
+            <span className="small">Kampüs Ayrıcalıkları</span>
           </div>
           <div className="task-list">
             {REWARD_TIERS.map((reward) => {
