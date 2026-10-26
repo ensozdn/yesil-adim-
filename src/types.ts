@@ -90,6 +90,15 @@ export interface AchievementBadge {
   progressText: string;
 }
 
+export interface BinCategoryStat {
+  binType: WasteBinType;
+  label: string;
+  icon: IconName;
+  count: number;
+  percent: number;
+  color: string;
+}
+
 export interface WalletState {
   stars: number;
   lifetimeStars: number;

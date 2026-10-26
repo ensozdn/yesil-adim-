@@ -13,6 +13,7 @@ import { QrScannerModal } from './components/QrScannerModal';
 import { FacultyLeaderboard } from './components/FacultyLeaderboard';
 import { StudentIdCard } from './components/StudentIdCard';
 import { AchievementBadges } from './components/AchievementBadges';
+import { RecyclingBreakdown } from './components/RecyclingBreakdown';
 import { analyzeWasteInput } from './services/wasteAiService';
 import { calculateEcoImpact } from './services/impactService';
 import { checkScanEligibility } from './services/cooldownService';
@@ -618,6 +619,8 @@ export const App: React.FC = () => {
           )}
 
           <AchievementBadges badges={badges} />
+
+          <RecyclingBreakdown history={wallet.history} />
 
           <div className="panel" style={{ marginTop: 16 }}>
             <div className="toggle-row">
