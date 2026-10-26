@@ -12,10 +12,12 @@ import { RewardModal } from './components/RewardModal';
 import { QrScannerModal } from './components/QrScannerModal';
 import { FacultyLeaderboard } from './components/FacultyLeaderboard';
 import { StudentIdCard } from './components/StudentIdCard';
+import { AchievementBadges } from './components/AchievementBadges';
 import { analyzeWasteInput } from './services/wasteAiService';
 import { calculateEcoImpact } from './services/impactService';
 import { checkScanEligibility } from './services/cooldownService';
 import { getFacultyStandings } from './services/leaderboardService';
+import { calculateBadges } from './services/badgeService';
 import './styles.css';
 
 const STORAGE_KEY = 'green-step-wallet-v1';
@@ -273,6 +275,7 @@ export const App: React.FC = () => {
   const levelInfo = getLevelData(wallet.lifetimeStars);
   const ecoImpact = calculateEcoImpact(wallet.lifetimeStars, wallet.history);
   const facultyStandings = getFacultyStandings(wallet.profile.department, wallet.lifetimeStars);
+  const badges = calculateBadges(wallet);
   const weeklyRewardTarget = 20;
   const starProgressPercent = Math.min(100, (wallet.stars / weeklyRewardTarget) * 100);
 
@@ -613,6 +616,8 @@ export const App: React.FC = () => {
               </button>
             </form>
           )}
+
+          <AchievementBadges badges={badges} />
 
           <div className="panel" style={{ marginTop: 16 }}>
             <div className="toggle-row">

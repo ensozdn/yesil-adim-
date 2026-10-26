@@ -81,6 +81,15 @@ export interface CooldownCheckResult {
   remainingSeconds?: number;
 }
 
+export interface AchievementBadge {
+  id: string;
+  title: string;
+  desc: string;
+  icon: IconName;
+  isUnlocked: boolean;
+  progressText: string;
+}
+
 export interface WalletState {
   stars: number;
   lifetimeStars: number;
