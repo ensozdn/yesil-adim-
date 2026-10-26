@@ -11,6 +11,7 @@ import { ImpactCard } from './components/ImpactCard';
 import { RewardModal } from './components/RewardModal';
 import { QrScannerModal } from './components/QrScannerModal';
 import { FacultyLeaderboard } from './components/FacultyLeaderboard';
+import { StudentIdCard } from './components/StudentIdCard';
 import { analyzeWasteInput } from './services/wasteAiService';
 import { calculateEcoImpact } from './services/impactService';
 import { checkScanEligibility } from './services/cooldownService';
@@ -548,31 +549,25 @@ export const App: React.FC = () => {
             QR kod okuttuğunda yıldızlarının kaybolmaması için öğrenci numaranla hızlı eşleştirme yapabilirsin.
           </p>
 
+          <StudentIdCard
+            profile={wallet.profile}
+            stars={wallet.stars}
+            levelName={levelInfo.name}
+            levelNumber={levelInfo.level}
+          />
+
           {wallet.profile.isLoggedIn ? (
-            <div className="panel" style={{ marginTop: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div className="taskicon">
-                  <Icon name="user" />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <strong>{wallet.profile.fullName}</strong>
-                  <div className="small">
+            <div className="panel" style={{ marginTop: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                <div>
+                  <strong>Bağlı Kampüs Kimliği</strong>
+                  <div className="small" style={{ marginTop: 3 }}>
                     {wallet.profile.studentId} · {wallet.profile.department}
                   </div>
                 </div>
                 <button className="back" onClick={handleLogout} aria-label="Çıkış yap">
                   <Icon name="logout" size={18} />
                 </button>
-              </div>
-              <div className="stats" style={{ marginTop: 16 }}>
-                <div className="stat">
-                  <div className="num">{wallet.stars}</div>
-                  <div className="label">Mevcut Yıldız</div>
-                </div>
-                <div className="stat">
-                  <div className="num">{wallet.lifetimeStars}</div>
-                  <div className="label">Toplam Kazanılan</div>
-                </div>
               </div>
             </div>
           ) : (
