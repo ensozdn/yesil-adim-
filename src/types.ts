@@ -17,7 +17,9 @@ export type IconName =
   | 'coffee'
   | 'logout'
   | 'plus'
-  | 'close';
+  | 'close'
+  | 'water'
+  | 'cloud';
 
 export type NavigationTab = 'home' | 'assistant' | 'profile';
 
@@ -45,6 +47,13 @@ export interface StudentProfile {
   fullName: string;
   department: string;
   isLoggedIn: boolean;
+}
+
+export interface EcoImpactData {
+  co2PreventedKg: string;
+  waterSavedLiters: string;
+  treesConserved: string;
+  campusMonthlyTotal: number;
 }
 
 export interface WalletState {

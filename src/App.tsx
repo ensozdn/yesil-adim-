@@ -6,7 +6,9 @@ import type {
   ChatMessage
 } from './types';
 import { Icon } from './components/Icon';
+import { ImpactCard } from './components/ImpactCard';
 import { analyzeWasteInput } from './services/wasteAiService';
+import { calculateEcoImpact } from './services/impactService';
 import './styles.css';
 
 const STORAGE_KEY = 'green-step-wallet-v1';
@@ -225,6 +227,7 @@ export const App: React.FC = () => {
   };
 
   const levelInfo = getLevelData(wallet.lifetimeStars);
+  const ecoImpact = calculateEcoImpact(wallet.lifetimeStars, wallet.history);
   const nextRewardTarget = 5;
   const starProgressPercent = Math.min(100, (wallet.stars / nextRewardTarget) * 100);
 
@@ -318,6 +321,8 @@ export const App: React.FC = () => {
               <span>AI Atık Asistanına Sor</span>
             </button>
           </div>
+
+          <ImpactCard impact={ecoImpact} />
 
           <div className="sectionhead">
             <strong>Seviye ve Ödül Durumu</strong>
