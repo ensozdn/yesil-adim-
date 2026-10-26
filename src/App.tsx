@@ -4,7 +4,8 @@ import type {
   WalletState,
   WasteBinType,
   ChatMessage,
-  RewardTier
+  RewardTier,
+  WasteSampleItem
 } from './types';
 import { Icon } from './components/Icon';
 import { ImpactCard } from './components/ImpactCard';
@@ -15,6 +16,7 @@ import { StudentIdCard } from './components/StudentIdCard';
 import { AchievementBadges } from './components/AchievementBadges';
 import { RecyclingBreakdown } from './components/RecyclingBreakdown';
 import { AppFooter } from './components/AppFooter';
+import { WasteSampleCards } from './components/WasteSampleCards';
 import { analyzeWasteInput } from './services/wasteAiService';
 import { calculateEcoImpact } from './services/impactService';
 import { checkScanEligibility } from './services/cooldownService';
@@ -196,11 +198,11 @@ export const App: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
-  const handleSendMessage = async (presetPrompt?: string) => {
+  const handleSendMessage = async (presetPrompt?: string, presetImage?: string) => {
     const textToSend = presetPrompt !== undefined ? presetPrompt : inputText.trim();
-    if (!textToSend && !selectedImage) return;
+    const currentImage = presetImage !== undefined ? presetImage : selectedImage;
+    if (!textToSend && !currentImage) return;
 
-    const currentImage = selectedImage;
     const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
       sender: 'user',
@@ -226,6 +228,10 @@ export const App: React.FC = () => {
 
     setMessages((prev) => [...prev, assistantMsg]);
     setIsAnalyzing(false);
+  };
+
+  const handleSelectSample = (sample: WasteSampleItem) => {
+    handleSendMessage(sample.prompt, sample.imageDataUrl);
   };
 
   const handleSaveProfile = (e: React.FormEvent) => {
@@ -449,26 +455,7 @@ export const App: React.FC = () => {
             Atığın fotoğrafını çek veya adını yaz; AI asistanımız kampüs kurallarına göre hangi geri dönüşüm kutusuna atman gerektiğini anında söylesin.
           </p>
 
-          <div className="quick-chips">
-            <button
-              className="chip"
-              onClick={() => handleSendMessage('Yağlı bir pizza kutusu atacağım, hangi çöpe atmam lazım?')}
-            >
-              Yağlı pizza kutusu
-            </button>
-            <button
-              className="chip"
-              onClick={() => handleSendMessage('Karton kahve bardağı hangi kutuya atılır?')}
-            >
-              Karton kahve bardağı
-            </button>
-            <button
-              className="chip"
-              onClick={() => handleSendMessage('Bitmiş kalem pil nereye bırakılır?')}
-            >
-              Bitmiş kalem pil
-            </button>
-          </div>
+          <WasteSampleCards onSelectSample={handleSelectSample} disabled={isAnalyzing} />
 
           <div className="chat-container">
             {messages.map((msg) => (
@@ -541,6 +528,8 @@ export const App: React.FC = () => {
               <Icon name="send" size={20} />
             </button>
           </div>
+
+          <AppFooter minimal />
         </section>
       )}
 

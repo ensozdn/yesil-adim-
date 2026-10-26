@@ -9,31 +9,31 @@ const LOCAL_KNOWLEDGE_BASE: Array<{
   reply: string;
 }> = [
   {
-    keywords: ['pizza', 'yağlı', 'kutu', 'karton'],
+    keywords: ['pizza', 'yağlı pizza', 'pizza kutusu', 'yağlı kutu'],
     recommendedBin: 'Ayırarak Atık Kutusu (Kâğıt + Genel Çöp)',
     reply:
       'Pizza kutularının yağ ve yemek kalıntısı bulaşmış alt kısmı kâğıt geri dönüşüm sürecini bozar. Yağlı alt tabanı Genel Çöp kutusuna, temiz kalan üst kapağı ise Kâğıt/Karton geri dönüşüm kutusuna bırakmalısın.'
   },
   {
-    keywords: ['kahve', 'karton bardak', 'bardak', 'kapak'],
+    keywords: ['kahve', 'karton bardak', 'kahve bardağı', 'bardak kapağı'],
     recommendedBin: 'Plastik Kapak + Genel Çöp',
     reply:
       'Karton kahve bardaklarının iç yüzeyinde sıvı geçirmemesi için ince bir plastik kaplama bulunur. Bu nedenle bardağın gövdesini Genel Çöp kutusuna, üstündeki sert plastik kapağı ise Plastik geri dönüşüm kutusuna atmalısın.'
   },
   {
-    keywords: ['şişe', 'su', 'pet', 'plastik', 'ayran', 'içecek'],
+    keywords: ['şişe', 'pet şişe', 'su şişesi', 'plastik şişe', 'ayran kutusu'],
     recommendedBin: 'Plastik Geri Dönüşüm Kutusu',
     reply:
       'Plastik şişenin içindeki sıvıyı tamamen boşalttıktan ve mümkünse ezerek hacmini küçülttükten sonra doğrudan Plastik geri dönüşüm kutusuna atabilirsin.'
   },
   {
-    keywords: ['pil', 'batarya', 'şarj', 'kulaklık', 'elektronik'],
+    keywords: ['pil', 'kalem pil', 'batarya', 'şarjlı pil', 'e-atık'],
     recommendedBin: 'Atık Pil / E-Atık Kutusu',
     reply:
       'Piller ve elektronik parçalar toprağa ve suya zararlı ağır metaller içerir. Kesinlikle normal çöpe atılmamalı, fakülte girişlerindeki Atık Pil veya Elektronik Atık noktalarına bırakılmalıdır.'
   },
   {
-    keywords: ['kupa', 'seramik', 'porselen', 'cam', 'şişe', 'kavanoz'],
+    keywords: ['kupa', 'seramik', 'porselen', 'kırık cam', 'cam kavanoz'],
     recommendedBin: 'Cam Kutusu / Evsel Atık Kontrolü',
     reply:
       'İçecek şişeleri ve kavanozlar Cam geri dönüşüm kutusuna atılır. Ancak kırık seramik veya porselen kupalar camın erime derecesini bozduğu için Cam kutusuna değil, korunaklı şekilde Genel Çöp kutusuna bırakılmalıdır.'
@@ -88,13 +88,27 @@ export async function analyzeWasteInput(
     }
   }
 
+  let bestMatch: (typeof LOCAL_KNOWLEDGE_BASE)[number] | null = null;
+  let maxScore = 0;
+
   for (const item of LOCAL_KNOWLEDGE_BASE) {
-    if (item.keywords.some((kw) => normalized.includes(kw))) {
-      return {
-        reply: item.reply,
-        recommendedBin: item.recommendedBin
-      };
+    let score = 0;
+    for (const kw of item.keywords) {
+      if (normalized.includes(kw)) {
+        score += kw.length;
+      }
     }
+    if (score > maxScore) {
+      maxScore = score;
+      bestMatch = item;
+    }
+  }
+
+  if (bestMatch && maxScore > 0) {
+    return {
+      reply: bestMatch.reply,
+      recommendedBin: bestMatch.recommendedBin
+    };
   }
 
   if (imageBase64) {

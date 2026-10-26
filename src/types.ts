@@ -99,6 +99,17 @@ export interface BinCategoryStat {
   color: string;
 }
 
+export interface WasteSampleItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  category: WasteBinType | 'general';
+  prompt: string;
+  imageDataUrl: string;
+  accentColor: string;
+  badgeText: string;
+}
+
 export interface WalletState {
   stars: number;
   lifetimeStars: number;
