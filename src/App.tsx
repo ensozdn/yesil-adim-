@@ -14,6 +14,7 @@ import { FacultyLeaderboard } from './components/FacultyLeaderboard';
 import { StudentIdCard } from './components/StudentIdCard';
 import { AchievementBadges } from './components/AchievementBadges';
 import { RecyclingBreakdown } from './components/RecyclingBreakdown';
+import { AppFooter } from './components/AppFooter';
 import { analyzeWasteInput } from './services/wasteAiService';
 import { calculateEcoImpact } from './services/impactService';
 import { checkScanEligibility } from './services/cooldownService';
@@ -431,6 +432,8 @@ export const App: React.FC = () => {
               );
             })}
           </div>
+
+          <AppFooter minimal />
         </section>
       )}
 
@@ -660,6 +663,8 @@ export const App: React.FC = () => {
           <div className="note">
             QR kod bağlantısı testi için adresin sonuna <strong>?scan=plastic</strong>, <strong>?scan=paper</strong> veya <strong>?scan=battery</strong> ekleyerek doğrudan yıldız kazanımını deneyimleyebilirsin.
           </div>
+
+          <AppFooter />
         </section>
       )}
 
