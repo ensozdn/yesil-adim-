@@ -1,10 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import QRCode from 'qrcode';
-import type { WasteBinType, IconName } from '../types';
+import type { WasteBinType, IconName, ScanRecord } from '../types';
 import { Icon } from './Icon';
+import {
+  getTodayStarsCount,
+  getTodayBinStarsCount,
+  getRemainingSameBinCooldown,
+  DAILY_STAR_LIMIT,
+  SAME_BIN_DAILY_LIMIT
+} from '../services/cooldownService';
 
 interface QrScannerModalProps {
   isOpen: boolean;
+  history: ScanRecord[];
   onClose: () => void;
   onScanSuccess: (binType: WasteBinType) => void;
 }
@@ -26,6 +34,7 @@ const PRESENTATION_BINS: PresentationCard[] = [
 
 export const QrScannerModal: React.FC<QrScannerModalProps> = ({
   isOpen,
+  history,
   onClose,
   onScanSuccess
 }) => {
@@ -34,6 +43,8 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
   const [cameraError, setCameraError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+
+  const todayStars = getTodayStarsCount(history);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -106,7 +117,21 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
   const handleSelectBin = (binType: WasteBinType) => {
     stopCamera();
     onScanSuccess(binType);
-    onClose();
+  };
+
+  const renderBinBadge = (binType: WasteBinType) => {
+    const binToday = getTodayBinStarsCount(binType, history);
+    if (binToday >= SAME_BIN_DAILY_LIMIT) {
+      return <span className="card-xp-badge maxed">Kota Doldu ({SAME_BIN_DAILY_LIMIT}/{SAME_BIN_DAILY_LIMIT})</span>;
+    }
+
+    const cooldownSeconds = getRemainingSameBinCooldown(binType, history);
+    if (cooldownSeconds > 0) {
+      const min = Math.ceil(cooldownSeconds / 60);
+      return <span className="card-xp-badge cooldown">{min} dk bekle</span>;
+    }
+
+    return <span className="card-xp-badge ready">Hazır · +1 Yıldız</span>;
   };
 
   if (!isOpen) return null;
@@ -119,6 +144,19 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
           <button className="back" onClick={onClose} aria-label="Kapat">
             <Icon name="close" size={16} />
           </button>
+        </div>
+
+        <div className="quota-bar-wrapper">
+          <div className="quota-text-row">
+            <span>Bugünkü İlerlemen</span>
+            <strong>{todayStars} / {DAILY_STAR_LIMIT} Yıldız</strong>
+          </div>
+          <div className="quota-progress-track">
+            <div
+              className="quota-progress-fill"
+              style={{ width: `${Math.min(100, (todayStars / DAILY_STAR_LIMIT) * 100)}%` }}
+            />
+          </div>
         </div>
 
         <div className="qr-tabs">
@@ -220,7 +258,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                   )}
                   <strong>{item.title}</strong>
                   <span className="bin-color-tag">{item.colorName}</span>
-                  <span className="card-xp-badge">+1 Yıldız</span>
+                  {renderBinBadge(item.binType)}
                 </div>
               ))}
             </div>
@@ -242,7 +280,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                   <strong>{item.title}</strong>
                   <span>{item.colorName} · Anında okutma</span>
                 </div>
-                <span className="taskxp">+1 Yıldız</span>
+                {renderBinBadge(item.binType)}
               </button>
             ))}
           </div>

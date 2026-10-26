@@ -38,6 +38,7 @@ export interface ScanRecord {
   binType: WasteBinType;
   label: string;
   timestamp: string;
+  createdAtMs: number;
   starsEarned: number;
 }
 
@@ -64,6 +65,12 @@ export interface EcoImpactData {
   campusMonthlyTotal: number;
 }
 
+export interface CooldownCheckResult {
+  canScan: boolean;
+  reason?: string;
+  remainingSeconds?: number;
+}
+
 export interface WalletState {
   stars: number;
   lifetimeStars: number;
@@ -73,4 +80,5 @@ export interface WalletState {
   redeemedRewards: string[];
   profile: StudentProfile;
   apiKey: string;
+  geofenceEnabled: boolean;
 }

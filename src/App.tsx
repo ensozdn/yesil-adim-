@@ -12,6 +12,7 @@ import { RewardModal } from './components/RewardModal';
 import { QrScannerModal } from './components/QrScannerModal';
 import { analyzeWasteInput } from './services/wasteAiService';
 import { calculateEcoImpact } from './services/impactService';
+import { checkScanEligibility } from './services/cooldownService';
 import './styles.css';
 
 const STORAGE_KEY = 'green-step-wallet-v1';
@@ -24,10 +25,10 @@ const BIN_LABELS: Record<WasteBinType, string> = {
   general: 'Kampüs Geri Dönüşüm Noktası'
 };
 
-const REWARD_TIERS = [
-  { id: 'coffee-5', stars: 5, title: 'Kampüs Kahve İkramı', desc: 'Anlaşmalı kampüs kafelerinde 1 sıcak içecek.' },
-  { id: 'thermos-15', stars: 15, title: 'Yeşil Adım Kupa Dönüşümü', desc: 'Kendi termosunla alımlarda ekstra yıldız hakkı.' },
-  { id: 'badge-30', stars: 30, title: 'Sıfır Atık Elçisi Sertifikası', desc: 'SAÜ Sürdürülebilir Kampüs dijital katılım belgesi.' }
+const REWARD_TIERS: RewardTier[] = [
+  { id: 'coffee-5', stars: 5, title: 'Kampüs Sıcak İçecek', desc: 'Anlaşmalı kampüs kafelerinde 1 çay veya filtre kahve.' },
+  { id: 'meal-12', stars: 12, title: 'Yemekhane Menü İndirimi', desc: 'SAÜ yemekhanesinde veya kantinlerinde tabldot menü indirimi.' },
+  { id: 'weekly-20', stars: 20, title: 'Haftalık Yıldız Şampiyonu', desc: '1 sandviç + büyük boy kahve ikramı ve dijital başarı rozeti.' }
 ];
 
 const getInitialState = (): WalletState => ({
@@ -41,6 +42,7 @@ const getInitialState = (): WalletState => ({
       binType: 'plastic',
       label: 'Plastik Ambalaj Kutusu',
       timestamp: 'Bugün · 10:15',
+      createdAtMs: Date.now() - 3600000,
       starsEarned: 1
     },
     {
@@ -48,6 +50,7 @@ const getInitialState = (): WalletState => ({
       binType: 'paper',
       label: 'Kâğıt ve Karton Kutusu',
       timestamp: 'Dün · 14:40',
+      createdAtMs: Date.now() - 86400000,
       starsEarned: 1
     }
   ],
@@ -58,7 +61,8 @@ const getInitialState = (): WalletState => ({
     department: 'Finans ve Ekonomi',
     isLoggedIn: false
   },
-  apiKey: ''
+  apiKey: '',
+  geofenceEnabled: false
 });
 
 export const App: React.FC = () => {
@@ -75,6 +79,7 @@ export const App: React.FC = () => {
   const [scanToast, setScanToast] = useState<string | null>(null);
   const [showQrModal, setShowQrModal] = useState<boolean>(false);
   const [activeVoucherReward, setActiveVoucherReward] = useState<RewardTier | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -119,6 +124,19 @@ export const App: React.FC = () => {
   };
 
   const registerQrScan = (binType: WasteBinType) => {
+    const eligibility = checkScanEligibility(
+      binType,
+      wallet.history,
+      wallet.geofenceEnabled,
+      userLocation
+    );
+
+    if (!eligibility.canScan) {
+      setScanToast(eligibility.reason || 'Bu kutu şu anda okutulamaz.');
+      setTimeout(() => setScanToast(null), 4500);
+      return;
+    }
+
     const now = new Date();
     const timeLabel = `Bugün · ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     const todayIso = now.toISOString().split('T')[0];
@@ -130,6 +148,7 @@ export const App: React.FC = () => {
         binType,
         label: BIN_LABELS[binType],
         timestamp: timeLabel,
+        createdAtMs: Date.now(),
         starsEarned: 1
       };
       return {
@@ -138,7 +157,7 @@ export const App: React.FC = () => {
         lifetimeStars: prev.lifetimeStars + 1,
         streak: isNewDay ? prev.streak + 1 : prev.streak,
         lastScanDate: todayIso,
-        history: [newRecord, ...prev.history.slice(0, 9)]
+        history: [newRecord, ...prev.history.slice(0, 19)]
       };
     });
 
@@ -230,10 +249,28 @@ export const App: React.FC = () => {
     }));
   };
 
+  const handleToggleGeofence = (enabled: boolean) => {
+    setWallet((prev) => ({ ...prev, geofenceEnabled: enabled }));
+    if (enabled && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserLocation({
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude
+          });
+        },
+        () => {
+          setScanToast('Konum izni alınamadı. Geofence simülasyonu devrede.');
+          setTimeout(() => setScanToast(null), 3500);
+        }
+      );
+    }
+  };
+
   const levelInfo = getLevelData(wallet.lifetimeStars);
   const ecoImpact = calculateEcoImpact(wallet.lifetimeStars, wallet.history);
-  const nextRewardTarget = 5;
-  const starProgressPercent = Math.min(100, (wallet.stars / nextRewardTarget) * 100);
+  const weeklyRewardTarget = 20;
+  const starProgressPercent = Math.min(100, (wallet.stars / weeklyRewardTarget) * 100);
 
   return (
     <main className="app">
@@ -284,11 +321,11 @@ export const App: React.FC = () => {
             <div className="star-balance-row">
               <span className="star-big-num">{wallet.stars}</span>
               <Icon name="star" size={32} className="star-gold" />
-              <span className="star-target-text">/ {nextRewardTarget} Yıldız Hedefi</span>
+              <span className="star-target-text">/ {weeklyRewardTarget} Haftalık Hedef</span>
             </div>
-            <h2>Atığını ayrıştır, QR okut ve yıldız topla.</h2>
+            <h2>Atığını ayrıştır, QR okut ve haftalık ödülünü topla.</h2>
             <p>
-              5 yıldıza ulaştığında kampüs kahve ikramı veya sürdürülebilirlik rozeti kazanırsın.
+              Haftada 20 yıldıza ulaştığında kampüs kahvesi veya yemekhane indirim kuponu kazanırsın.
             </p>
             <div className="hero-progress-track">
               <div
@@ -578,6 +615,25 @@ export const App: React.FC = () => {
           )}
 
           <div className="panel" style={{ marginTop: 16 }}>
+            <div className="toggle-row">
+              <div>
+                <strong>SAÜ Esentepe Kampüs Doğrulaması</strong>
+                <p className="small" style={{ marginTop: 4 }}>
+                  Evden okutmayı önlemek için GPS konumunu SAÜ kampüsüyle doğrular. Test veya sunum amaçlı kapatılabilir.
+                </p>
+              </div>
+              <label className="switch">
+                <input
+                  type="checkbox"
+                  checked={wallet.geofenceEnabled}
+                  onChange={(e) => handleToggleGeofence(e.target.checked)}
+                />
+                <span className="slider" />
+              </label>
+            </div>
+          </div>
+
+          <div className="panel" style={{ marginTop: 16 }}>
             <strong>Google AI Studio (Gemini) Anahtarı (İsteğe Bağlı)</strong>
             <p className="small" style={{ marginTop: 4, marginBottom: 10 }}>
               Canlı görsel analizi için Gemini API anahtarı girebilirsin. Boş bırakılırsa yerleşik akıllı kampüs asistanı yanıt verir.
@@ -601,6 +657,7 @@ export const App: React.FC = () => {
 
       <QrScannerModal
         isOpen={showQrModal}
+        history={wallet.history}
         onClose={() => setShowQrModal(false)}
         onScanSuccess={registerQrScan}
       />
