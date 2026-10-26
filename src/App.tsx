@@ -375,37 +375,6 @@ export const App: React.FC = () => {
               );
             })}
           </div>
-
-          <div className="sectionhead">
-            <strong>Son QR Okutmaların</strong>
-            <span className="small">{wallet.history.length} kayıt</span>
-          </div>
-          <div className="task-list">
-            {wallet.history.map((item) => (
-              <div key={item.id} className="taskrow">
-                <div className="taskicon">
-                  <Icon
-                    name={
-                      item.binType === 'paper'
-                        ? 'paper'
-                        : item.binType === 'plastic'
-                        ? 'plastic'
-                        : item.binType === 'glass'
-                        ? 'glass'
-                        : item.binType === 'battery'
-                        ? 'battery'
-                        : 'recycle'
-                    }
-                  />
-                </div>
-                <div className="taskmeta">
-                  <strong>{item.label}</strong>
-                  <span>{item.timestamp}</span>
-                </div>
-                <span className="taskxp">+{item.starsEarned} Yıldız</span>
-              </div>
-            ))}
-          </div>
         </section>
       )}
 
