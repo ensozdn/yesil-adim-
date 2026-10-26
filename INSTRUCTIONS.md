@@ -46,6 +46,11 @@ Yesil Adim is a mobile-first, QR-driven micro web application developed for an e
 - UI components must adhere to Apple Human Interface Guidelines: consistent radii, subtle borders, high-contrast typography, and tactile tap feedback.
 - Icons must be hand-crafted or dedicated inline SVG components with unified geometric styling and uniform stroke weight (`stroke-width: 1.8` or `2.0`). No third-party emoji-like icon fonts.
 
+### Rule 5: Modular, Neat & Organized Architecture
+- All code, components, services, utilities, and assets must be strictly modular, well-organized, and cleanly decoupled.
+- Avoid oversized monolithic files. Distinct functional domains (wallet, AI chat, rewards, modals, profile) must be decomposed into dedicated, single-responsibility components and service modules.
+- Maintain a structured folder hierarchy (`components/`, `services/`, `types/`, `styles/`) with clean, reusable exports.
+
 ---
 
 ## 3. Operational Protocol
