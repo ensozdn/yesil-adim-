@@ -9,6 +9,7 @@ import type {
 import { Icon } from './components/Icon';
 import { ImpactCard } from './components/ImpactCard';
 import { RewardModal } from './components/RewardModal';
+import { QrScannerModal } from './components/QrScannerModal';
 import { analyzeWasteInput } from './services/wasteAiService';
 import { calculateEcoImpact } from './services/impactService';
 import './styles.css';
@@ -598,39 +599,11 @@ export const App: React.FC = () => {
         </section>
       )}
 
-      {showQrModal && (
-        <div className="modal-backdrop" onClick={() => setShowQrModal(false)}>
-          <div className="modal-sheet" onClick={(e) => e.stopPropagation()}>
-            <div className="sectionhead" style={{ marginTop: 0 }}>
-              <strong>Kampüs QR Noktası Seç (Simülasyon)</strong>
-              <button className="back" onClick={() => setShowQrModal(false)}>
-                <Icon name="close" size={16} />
-              </button>
-            </div>
-            <p className="small" style={{ marginBottom: 14 }}>
-              Gerçek kullanımda kutu üzerindeki fiziksel QR okutulduğunda bu işlem otomatik gerçekleşir ve +1 Yıldız eklenir.
-            </p>
-            <div className="task-list">
-              {(['plastic', 'paper', 'glass', 'battery'] as const).map((bin) => (
-                <button
-                  key={bin}
-                  className="taskrow"
-                  onClick={() => registerQrScan(bin)}
-                >
-                  <div className="taskicon">
-                    <Icon name={bin} />
-                  </div>
-                  <div className="taskmeta">
-                    <strong>{BIN_LABELS[bin]}</strong>
-                    <span>QR Okut · Anında ödül</span>
-                  </div>
-                  <span className="taskxp">+1 Yıldız</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      <QrScannerModal
+        isOpen={showQrModal}
+        onClose={() => setShowQrModal(false)}
+        onScanSuccess={registerQrScan}
+      />
 
       {activeVoucherReward && (
         <RewardModal
