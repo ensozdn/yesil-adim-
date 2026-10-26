@@ -3,10 +3,12 @@ import type {
   NavigationTab,
   WalletState,
   WasteBinType,
-  ChatMessage
+  ChatMessage,
+  RewardTier
 } from './types';
 import { Icon } from './components/Icon';
 import { ImpactCard } from './components/ImpactCard';
+import { RewardModal } from './components/RewardModal';
 import { analyzeWasteInput } from './services/wasteAiService';
 import { calculateEcoImpact } from './services/impactService';
 import './styles.css';
@@ -71,6 +73,7 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<NavigationTab>('home');
   const [scanToast, setScanToast] = useState<string | null>(null);
   const [showQrModal, setShowQrModal] = useState<boolean>(false);
+  const [activeVoucherReward, setActiveVoucherReward] = useState<RewardTier | null>(null);
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -372,9 +375,9 @@ export const App: React.FC = () => {
                   <button
                     className={`reward-btn ${canRedeem ? 'ready' : ''}`}
                     disabled={!canRedeem}
-                    onClick={() => handleRedeemReward(reward.id, reward.stars, reward.title)}
+                    onClick={() => setActiveVoucherReward(reward)}
                   >
-                    {reward.stars} Yıldız
+                    {canRedeem ? 'Kupon Aç' : `${reward.stars} Yıldız`}
                   </button>
                 </div>
               );
@@ -627,6 +630,14 @@ export const App: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {activeVoucherReward && (
+        <RewardModal
+          reward={activeVoucherReward}
+          onClose={() => setActiveVoucherReward(null)}
+          onConfirmRedeem={handleRedeemReward}
+        />
       )}
 
       <nav className="bottomnav" aria-label="Ana gezinme">

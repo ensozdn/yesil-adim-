@@ -19,7 +19,15 @@ export type IconName =
   | 'plus'
   | 'close'
   | 'water'
-  | 'cloud';
+  | 'cloud'
+  | 'timer';
+
+export interface RewardTier {
+  id: string;
+  stars: number;
+  title: string;
+  desc: string;
+}
 
 export type NavigationTab = 'home' | 'assistant' | 'profile';
 
