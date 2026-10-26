@@ -1,0 +1,17 @@
+{
+  "name": "Yeşil Adım - SAÜ Sürdürülebilir Kampüs",
+  "short_name": "Yeşil Adım",
+  "description": "Sakarya Üniversitesi QR tabanlı sürdürülebilirlik ve AI atık asistanı platformu.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f9f6",
+  "theme_color": "#23633f",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "128x128 192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
