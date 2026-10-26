@@ -1136,6 +1136,141 @@ input:checked + .slider:before {
   transform: translateX(18px);
 }
 
+.leaderboard-container {
+  margin: 22px 0 10px;
+}
+
+.user-faculty-highlight-bar {
+  background: #edf5e8;
+  border: 1px solid #cce1c4;
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.sm-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+}
+
+.leaderboard-list {
+  display: grid;
+  gap: 8px;
+}
+
+.leaderboard-row {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.leaderboard-row.user-active-faculty {
+  border-color: #a4ce96;
+  background: #fbfdf9;
+  box-shadow: 0 3px 12px rgba(35, 99, 63, 0.06);
+}
+
+.rank-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: #f1f4ee;
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 850;
+  flex-shrink: 0;
+}
+
+.rank-badge.rank-1 {
+  background: #d9eea5;
+  color: #1a4227;
+  font-weight: 900;
+}
+
+.rank-badge.rank-2 {
+  background: #e6eddf;
+  color: var(--ink);
+}
+
+.rank-badge.rank-3 {
+  background: #f1ebd9;
+  color: #725b30;
+}
+
+.leaderboard-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.leaderboard-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.faculty-name {
+  font-size: 13.5px;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-faculty-tag {
+  background: var(--green);
+  color: white;
+  font-size: 10px;
+  font-weight: 850;
+  padding: 2px 7px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.leaderboard-track {
+  height: 6px;
+  background: #eef2eb;
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.leaderboard-fill {
+  height: 100%;
+  background: var(--green2);
+  border-radius: 99px;
+  transition: width 0.35s ease;
+}
+
+.user-active-faculty .leaderboard-fill {
+  background: var(--green);
+}
+
+.leaderboard-subline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.leaderboard-stars-val {
+  font-weight: 800;
+  color: var(--green);
+}
+
 @media (min-width: 600px) {
   body {
     padding: 18px 0;

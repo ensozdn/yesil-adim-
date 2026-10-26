@@ -20,7 +20,17 @@ export type IconName =
   | 'close'
   | 'water'
   | 'cloud'
-  | 'timer';
+  | 'timer'
+  | 'trophy';
+
+export interface FacultyStanding {
+  id: string;
+  name: string;
+  stars: number;
+  rank: number;
+  recycledCount: number;
+  isUserFaculty: boolean;
+}
 
 export interface RewardTier {
   id: string;
