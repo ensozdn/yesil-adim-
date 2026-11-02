@@ -163,3 +163,4 @@ export const CAMPUS_WASTE_STATIONS: CampusWasteStation[] = [
     locationDetail: 'Atölye girişleri, sergi holü ve bina ana giriş kapısı.'
   }
 ];
+
