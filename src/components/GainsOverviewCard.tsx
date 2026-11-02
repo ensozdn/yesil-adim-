@@ -132,3 +132,4 @@ export const GainsOverviewCard: React.FC<GainsOverviewCardProps> = ({
 };
 
 export default GainsOverviewCard;
+

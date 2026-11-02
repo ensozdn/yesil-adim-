@@ -62,3 +62,4 @@ export const QuickActionCards: React.FC<QuickActionCardsProps> = ({
 };
 
 export default QuickActionCards;
+

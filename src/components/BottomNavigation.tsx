@@ -80,3 +80,4 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
 };
 
 export default BottomNavigation;
+

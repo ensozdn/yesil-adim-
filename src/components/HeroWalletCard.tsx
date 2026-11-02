@@ -67,3 +67,4 @@ export const HeroWalletCard: React.FC<HeroWalletCardProps> = ({
 };
 
 export default HeroWalletCard;
+

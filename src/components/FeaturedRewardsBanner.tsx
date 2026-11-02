@@ -70,3 +70,4 @@ export const FeaturedRewardsBanner: React.FC<FeaturedRewardsBannerProps> = ({
 };
 
 export default FeaturedRewardsBanner;
+
