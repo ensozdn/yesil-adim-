@@ -179,7 +179,7 @@ export const App: React.FC = () => {
   return (
     <main className="app">
       {showSplash && (
-        <SplashScreen onFinish={() => setShowSplash(false)} durationMs={3000} />
+        <SplashScreen onFinish={() => setShowSplash(false)} durationMs={2000} />
       )}
 
       <AppHeader

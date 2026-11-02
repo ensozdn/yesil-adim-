@@ -8,14 +8,14 @@ interface SplashScreenProps {
 
 export const SplashScreen: React.FC<SplashScreenProps> = ({
   onFinish,
-  durationMs = 3000
+  durationMs = 2000
 }) => {
   const [isFadingOut, setIsFadingOut] = useState<boolean>(false);
 
   useEffect(() => {
     const fadeTimer = setTimeout(() => {
       setIsFadingOut(true);
-    }, durationMs - 500);
+    }, Math.max(0, durationMs - 400));
 
     const finishTimer = setTimeout(() => {
       onFinish();
@@ -53,7 +53,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
         <div className="splash-loader-bar">
           <div
             className="splash-loader-progress"
-            style={{ animationDuration: `${durationMs - 600}ms` }}
+            style={{ animationDuration: `${Math.max(500, durationMs - 400)}ms` }}
           />
         </div>
       </div>
