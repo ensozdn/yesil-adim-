@@ -12,15 +12,6 @@ export const Icon: React.FC<IconProps> = ({ name, className = 'ico', size = 22 }
     switch (name) {
       case 'star':
         return <path d="M12 3 14.9 8.8 21.3 9.7 16.6 14.2 17.7 20.6 12 17.6 6.3 20.6 7.4 14.2 2.7 9.7 9.1 8.8 12 3Z" />;
-      case 'qr':
-        return (
-          <>
-            <rect x="3" y="3" width="7" height="7" rx="1.5" />
-            <rect x="14" y="3" width="7" height="7" rx="1.5" />
-            <rect x="3" y="14" width="7" height="7" rx="1.5" />
-            <path d="M14 14h3v3h-3zM18 18h3v3h-3zM18 14h3M14 18v3" />
-          </>
-        );
       case 'chat':
         return (
           <>
@@ -75,40 +66,34 @@ export const Icon: React.FC<IconProps> = ({ name, className = 'ico', size = 22 }
             <path d="M7 17h8l2 4" />
           </>
         );
-      case 'paper':
-        return (
-          <>
-            <path d="M6 3h8l4 4v14H6z" />
-            <path d="M14 3v5h5M9 12h6M9 16h6" />
-          </>
-        );
-      case 'plastic':
-        return (
-          <>
-            <path d="M9 3h6v4l2 2v12H7V9l2-2V3Z" />
-            <path d="M9 7h6M7 13h10" />
-          </>
-        );
-      case 'glass':
-        return (
-          <>
-            <path d="M8 3h8l-1 18H9L8 3Z" />
-            <path d="M8 7h8M10 12h4" />
-          </>
-        );
-      case 'battery':
-        return (
-          <>
-            <rect x="4" y="7" width="16" height="14" rx="2" />
-            <path d="M9 7V4h6v3M12 10v8m-3-4h6" />
-          </>
-        );
       case 'coffee':
         return (
           <>
             <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
             <path d="M3 8h14v7a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8Z" />
             <path d="M6 2v3M10 2v3M14 2v3" />
+          </>
+        );
+      case 'food':
+        return (
+          <>
+            <path d="M5 3v7a2 2 0 0 0 4 0V3" />
+            <path d="M7 3v18" />
+            <path d="M17 3c-2 1.5-3 4-3 7 0 2 1 3 3 3v8" />
+          </>
+        );
+      case 'tag':
+        return (
+          <>
+            <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z" />
+            <circle cx="7.5" cy="7.5" r="1.2" />
+          </>
+        );
+      case 'book':
+        return (
+          <>
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14Z" />
+            <path d="M6.5 17H20v4H6.5a2.5 2.5 0 0 1 0-4Z" />
           </>
         );
       case 'logout':
@@ -118,29 +103,13 @@ export const Icon: React.FC<IconProps> = ({ name, className = 'ico', size = 22 }
             <path d="m16 17 5-5-5-5M21 12H9" />
           </>
         );
-      case 'plus':
-        return <path d="M12 5v14M5 12h14" />;
       case 'close':
         return <path d="M18 6 6 18M6 6l12 12" />;
-      case 'water':
-        return <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />;
-      case 'cloud':
-        return <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />;
       case 'timer':
         return (
           <>
             <circle cx="12" cy="12" r="9" />
             <path d="M12 6v6l4 2" />
-          </>
-        );
-      case 'trophy':
-        return (
-          <>
-            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-            <path d="M4 22h16" />
-            <path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34" />
-            <path d="M6 4h12v7a6 6 0 0 1-12 0V4Z" />
           </>
         );
       case 'eye':
@@ -161,13 +130,6 @@ export const Icon: React.FC<IconProps> = ({ name, className = 'ico', size = 22 }
         );
       case 'arrow-right':
         return <path d="m9 18 6-6-6-6" />;
-      case 'pin':
-        return (
-          <>
-            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-            <circle cx="12" cy="10" r="3" />
-          </>
-        );
       case 'leaf':
       default:
         return (

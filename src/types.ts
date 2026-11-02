@@ -1,7 +1,6 @@
 export type IconName =
   | 'leaf'
   | 'star'
-  | 'qr'
   | 'chat'
   | 'user'
   | 'home'
@@ -10,22 +9,16 @@ export type IconName =
   | 'check'
   | 'spark'
   | 'recycle'
-  | 'paper'
-  | 'plastic'
-  | 'glass'
-  | 'battery'
   | 'coffee'
+  | 'food'
+  | 'tag'
+  | 'book'
   | 'logout'
-  | 'plus'
   | 'close'
-  | 'water'
-  | 'cloud'
   | 'timer'
-  | 'trophy'
   | 'eye'
   | 'eye-off'
-  | 'arrow-right'
-  | 'pin';
+  | 'arrow-right';
 
 export interface RewardTier {
   id: string;
@@ -34,18 +27,15 @@ export interface RewardTier {
   desc: string;
 }
 
-export type NavigationTab = 'home' | 'assistant' | 'profile';
-
-export type WasteBinType = 'paper' | 'plastic' | 'glass' | 'battery' | 'general';
-
-export interface ScanRecord {
-  id: string;
-  binType: WasteBinType;
-  label: string;
-  timestamp: string;
-  createdAtMs: number;
-  starsEarned: number;
+export interface CampusOffer extends RewardTier {
+  partner: string;
+  badge: string;
+  icon: IconName;
+  gradientFrom: string;
+  gradientTo: string;
 }
+
+export type NavigationTab = 'home' | 'assistant' | 'profile';
 
 export interface ChatMessage {
   id: string;
@@ -63,56 +53,11 @@ export interface StudentProfile {
   isLoggedIn: boolean;
 }
 
-export interface EcoImpactData {
-  co2PreventedKg: string;
-  waterSavedLiters: string;
-  treesConserved: string;
-  campusMonthlyTotal: number;
-}
-
-export interface CooldownCheckResult {
-  canScan: boolean;
-  reason?: string;
-  remainingSeconds?: number;
-}
-
-export interface AchievementBadge {
-  id: string;
-  title: string;
-  desc: string;
-  icon: IconName;
-  isUnlocked: boolean;
-  progressText: string;
-}
-
-export interface BinCategoryStat {
-  binType: WasteBinType;
-  label: string;
-  icon: IconName;
-  count: number;
-  percent: number;
-  color: string;
-}
-
-export interface WasteSampleItem {
-  id: string;
-  title: string;
-  subtitle: string;
-  category: WasteBinType | 'general';
-  prompt: string;
-  imageDataUrl: string;
-  accentColor: string;
-  badgeText: string;
-}
-
 export interface WalletState {
   stars: number;
   lifetimeStars: number;
   streak: number;
-  lastScanDate: string | null;
-  history: ScanRecord[];
   redeemedRewards: string[];
   profile: StudentProfile;
   apiKey: string;
-  geofenceEnabled: boolean;
 }

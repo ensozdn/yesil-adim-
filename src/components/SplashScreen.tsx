@@ -8,7 +8,7 @@ interface SplashScreenProps {
 
 export const SplashScreen: React.FC<SplashScreenProps> = ({
   onFinish,
-  durationMs = 4000
+  durationMs = 3000
 }) => {
   const [isFadingOut, setIsFadingOut] = useState<boolean>(false);
 
@@ -62,3 +62,4 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
 };
 
 export default SplashScreen;
+

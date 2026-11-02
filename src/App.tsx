@@ -2,72 +2,30 @@ import React, { useState, useEffect, useRef } from 'react';
 import type {
   NavigationTab,
   WalletState,
-  WasteBinType,
   ChatMessage,
-  RewardTier,
-  WasteSampleItem
+  RewardTier
 } from './types';
 import { Icon } from './components/Icon';
-import { ImpactCard } from './components/ImpactCard';
 import { RewardModal } from './components/RewardModal';
-import { QrScannerModal } from './components/QrScannerModal';
 import { StudentIdCard } from './components/StudentIdCard';
-import { AchievementBadges } from './components/AchievementBadges';
-import { RecyclingBreakdown } from './components/RecyclingBreakdown';
 import { AppFooter } from './components/AppFooter';
-import { WasteSampleCards } from './components/WasteSampleCards';
 import { AppHeader } from './components/AppHeader';
 import { HeroWalletCard } from './components/HeroWalletCard';
-import { QuickActionCards } from './components/QuickActionCards';
 import { GainsOverviewCard } from './components/GainsOverviewCard';
-import { FeaturedRewardsBanner } from './components/FeaturedRewardsBanner';
+import { FeaturedOffersCarousel } from './components/FeaturedOffersCarousel';
 import { BottomNavigation } from './components/BottomNavigation';
 import { SplashScreen } from './components/SplashScreen';
 import { analyzeWasteInput } from './services/wasteAiService';
-import { calculateEcoImpact } from './services/impactService';
-import { checkScanEligibility } from './services/cooldownService';
-import { calculateBadges } from './services/badgeService';
+import { CAMPUS_OFFERS } from './services/campusOffersService';
 import './styles.css';
 
 const STORAGE_KEY = 'green-step-wallet-v1';
-
-const BIN_LABELS: Record<WasteBinType, string> = {
-  paper: 'Kâğıt ve Karton Kutusu',
-  plastic: 'Plastik Ambalaj Kutusu',
-  glass: 'Cam Atık Kutusu',
-  battery: 'Atık Pil Noktası',
-  general: 'Kampüs Geri Dönüşüm Noktası'
-};
-
-const REWARD_TIERS: RewardTier[] = [
-  { id: 'coffee-5', stars: 5, title: 'Kampüs Sıcak İçecek', desc: 'Anlaşmalı kampüs kafelerinde 1 çay veya filtre kahve.' },
-  { id: 'meal-12', stars: 12, title: 'Yemekhane Menü İndirimi', desc: 'SAÜ yemekhanesinde veya kantinlerinde tabldot menü indirimi.' },
-  { id: 'weekly-20', stars: 20, title: 'Haftalık Yıldız Şampiyonu', desc: '1 sandviç + büyük boy kahve ikramı ve dijital başarı rozeti.' }
-];
+const WEEKLY_REWARD_TARGET = 20;
 
 const getInitialState = (): WalletState => ({
   stars: 2,
   lifetimeStars: 2,
   streak: 1,
-  lastScanDate: null,
-  history: [
-    {
-      id: 'init-1',
-      binType: 'plastic',
-      label: 'Plastik Ambalaj Kutusu',
-      timestamp: 'Bugün · 10:15',
-      createdAtMs: Date.now() - 3600000,
-      starsEarned: 1
-    },
-    {
-      id: 'init-2',
-      binType: 'paper',
-      label: 'Kâğıt ve Karton Kutusu',
-      timestamp: 'Dün · 14:40',
-      createdAtMs: Date.now() - 86400000,
-      starsEarned: 1
-    }
-  ],
   redeemedRewards: [],
   profile: {
     studentId: '',
@@ -75,9 +33,15 @@ const getInitialState = (): WalletState => ({
     department: 'Finans ve Ekonomi',
     isLoggedIn: false
   },
-  apiKey: '',
-  geofenceEnabled: false
+  apiKey: ''
 });
+
+const getLevelData = (lifetimeStars: number) => {
+  if (lifetimeStars >= 20) return { level: 4, name: 'Yeşil Öncü' };
+  if (lifetimeStars >= 10) return { level: 3, name: 'Kampüs Koruyucusu' };
+  if (lifetimeStars >= 5) return { level: 2, name: 'Doğa Dostu' };
+  return { level: 1, name: 'Yeşil Başlangıç' };
+};
 
 export const App: React.FC = () => {
   const [wallet, setWallet] = useState<WalletState>(() => {
@@ -91,16 +55,14 @@ export const App: React.FC = () => {
 
   const [showSplash, setShowSplash] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<NavigationTab>('home');
-  const [scanToast, setScanToast] = useState<string | null>(null);
-  const [showQrModal, setShowQrModal] = useState<boolean>(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [activeVoucherReward, setActiveVoucherReward] = useState<RewardTier | null>(null);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome-msg',
       sender: 'assistant',
-      text: 'Merhaba! Hangi atığı hangi kutuya atacağından emin değilsen fotoğrafını yükleyebilir veya doğrudan bana sorabilirsin. Örneğin: "Yağlı pizza kutusunu nereye atmalıyım?"',
+      text: 'Merhaba! Hangi atığı hangi kutuya atacağından emin değilsen fotoğrafını çekip gönderebilir veya doğrudan bana sorabilirsin. Örneğin: "Yağlı pizza kutusunu nereye atmalıyım?"',
       recommendedBin: 'Yeşil Asistan Hazır',
       timestamp: 'Şimdi'
     }
@@ -121,65 +83,10 @@ export const App: React.FC = () => {
     }
   }, [wallet]);
 
-  const getLevelData = (lifetimeStars: number) => {
-    if (lifetimeStars >= 20) return { level: 4, name: 'Yeşil Öncü', nextTarget: 30 };
-    if (lifetimeStars >= 10) return { level: 3, name: 'Kampüs Koruyucusu', nextTarget: 20 };
-    if (lifetimeStars >= 5) return { level: 2, name: 'Doğa Dostu', nextTarget: 10 };
-    return { level: 1, name: 'Yeşil Başlangıç', nextTarget: 5 };
+  const showToast = (message: string, durationMs = 3500) => {
+    setToastMessage(message);
+    setTimeout(() => setToastMessage(null), durationMs);
   };
-
-  const registerQrScan = (binType: WasteBinType) => {
-    const eligibility = checkScanEligibility(
-      binType,
-      wallet.history,
-      wallet.geofenceEnabled,
-      userLocation
-    );
-
-    if (!eligibility.canScan) {
-      setScanToast(eligibility.reason || 'Bu kutu şu anda okutulamaz.');
-      setTimeout(() => setScanToast(null), 4500);
-      return;
-    }
-
-    const now = new Date();
-    const timeLabel = `Bugün · ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    const todayIso = now.toISOString().split('T')[0];
-
-    setWallet((prev) => {
-      const isNewDay = prev.lastScanDate !== todayIso;
-      const newRecord = {
-        id: `scan-${Date.now()}`,
-        binType,
-        label: BIN_LABELS[binType],
-        timestamp: timeLabel,
-        createdAtMs: Date.now(),
-        starsEarned: 1
-      };
-      return {
-        ...prev,
-        stars: prev.stars + 1,
-        lifetimeStars: prev.lifetimeStars + 1,
-        streak: isNewDay ? prev.streak + 1 : prev.streak,
-        lastScanDate: todayIso,
-        history: [newRecord, ...prev.history.slice(0, 19)]
-      };
-    });
-
-    setShowQrModal(false);
-    setScanToast(`${BIN_LABELS[binType]} okutuldu · +1 Yıldız eklendi`);
-    setTimeout(() => setScanToast(null), 3800);
-  };
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const scannedBin = (params.get('scan') || params.get('task')) as WasteBinType | null;
-    if (scannedBin) {
-      const validBin: WasteBinType = BIN_LABELS[scannedBin] ? scannedBin : 'general';
-      registerQrScan(validBin);
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, []);
 
   const handleRedeemReward = (rewardId: string, cost: number, title: string) => {
     if (wallet.stars < cost) return;
@@ -188,8 +95,12 @@ export const App: React.FC = () => {
       stars: prev.stars - cost,
       redeemedRewards: [...prev.redeemedRewards, rewardId]
     }));
-    setScanToast(`${title} için yıldızların kullanıldı`);
-    setTimeout(() => setScanToast(null), 3500);
+    showToast(`${title} için yıldızların kullanıldı`);
+  };
+
+  const handleOpenFirstOffer = () => {
+    const affordable = CAMPUS_OFFERS.find((offer) => wallet.stars >= offer.stars);
+    setActiveVoucherReward(affordable || CAMPUS_OFFERS[0]);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -204,9 +115,9 @@ export const App: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
-  const handleSendMessage = async (presetPrompt?: string, presetImage?: string) => {
-    const textToSend = presetPrompt !== undefined ? presetPrompt : inputText.trim();
-    const currentImage = presetImage !== undefined ? presetImage : selectedImage;
+  const handleSendMessage = async () => {
+    const textToSend = inputText.trim();
+    const currentImage = selectedImage;
     if (!textToSend && !currentImage) return;
 
     const userMsg: ChatMessage = {
@@ -236,10 +147,6 @@ export const App: React.FC = () => {
     setIsAnalyzing(false);
   };
 
-  const handleSelectSample = (sample: WasteSampleItem) => {
-    handleSendMessage(sample.prompt, sample.imageDataUrl);
-  };
-
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
     if (!studentIdInput.trim() || !fullNameInput.trim()) return;
@@ -252,8 +159,7 @@ export const App: React.FC = () => {
         isLoggedIn: true
       }
     }));
-    setScanToast('Öğrenci profili bu cihaza bağlandı');
-    setTimeout(() => setScanToast(null), 3000);
+    showToast('Öğrenci profili bu cihaza bağlandı', 3000);
   };
 
   const handleLogout = () => {
@@ -268,33 +174,12 @@ export const App: React.FC = () => {
     }));
   };
 
-  const handleToggleGeofence = (enabled: boolean) => {
-    setWallet((prev) => ({ ...prev, geofenceEnabled: enabled }));
-    if (enabled && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setUserLocation({
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude
-          });
-        },
-        () => {
-          setScanToast('Konum izni alınamadı. Geofence simülasyonu devrede.');
-          setTimeout(() => setScanToast(null), 3500);
-        }
-      );
-    }
-  };
-
   const levelInfo = getLevelData(wallet.lifetimeStars);
-  const ecoImpact = calculateEcoImpact(wallet.lifetimeStars, wallet.history);
-  const badges = calculateBadges(wallet);
-  const weeklyRewardTarget = 20;
 
   return (
     <main className="app">
       {showSplash && (
-        <SplashScreen onFinish={() => setShowSplash(false)} durationMs={4000} />
+        <SplashScreen onFinish={() => setShowSplash(false)} durationMs={3000} />
       )}
 
       <AppHeader
@@ -304,10 +189,10 @@ export const App: React.FC = () => {
         onOpenProfile={() => setActiveTab('profile')}
       />
 
-      {scanToast && (
+      {toastMessage && (
         <div className="toast-banner" role="status">
           <Icon name="check" size={18} />
-          <span>{scanToast}</span>
+          <span>{toastMessage}</span>
         </div>
       )}
 
@@ -317,61 +202,16 @@ export const App: React.FC = () => {
             stars={wallet.stars}
             levelName={levelInfo.name}
             levelNumber={levelInfo.level}
-            onOpenRewards={() => {
-              const eligible = REWARD_TIERS.find((r) => wallet.stars >= r.stars) || REWARD_TIERS[0];
-              setActiveVoucherReward(eligible);
-            }}
+            onOpenRewards={handleOpenFirstOffer}
           />
 
-          <QuickActionCards
-            onStartScan={() => setShowQrModal(true)}
-            onOpenAssistant={() => setActiveTab('assistant')}
-          />
+          <GainsOverviewCard stars={wallet.stars} targetStars={WEEKLY_REWARD_TARGET} />
 
-          <GainsOverviewCard
-            stars={wallet.stars}
-            targetStars={weeklyRewardTarget}
-            history={wallet.history}
-            onViewDetails={() => setActiveTab('profile')}
-          />
-
-          <FeaturedRewardsBanner
-            rewards={REWARD_TIERS}
+          <FeaturedOffersCarousel
+            offers={CAMPUS_OFFERS}
             currentStars={wallet.stars}
-            onSelectReward={(reward) => setActiveVoucherReward(reward)}
-            onViewAll={() => setActiveTab('profile')}
+            onSelectOffer={(offer) => setActiveVoucherReward(offer)}
           />
-
-          <ImpactCard impact={ecoImpact} />
-
-          <div className="sectionhead" style={{ marginTop: 20 }}>
-            <strong>Kampüs Yıldız Ödülleri</strong>
-            <span className="small">Kuponlar</span>
-          </div>
-          <div className="task-list">
-            {REWARD_TIERS.map((reward) => {
-              const canRedeem = wallet.stars >= reward.stars;
-              return (
-                <div key={reward.id} className="taskrow">
-                  <div className="taskicon">
-                    <Icon name="coffee" />
-                  </div>
-                  <div className="taskmeta">
-                    <strong>{reward.title}</strong>
-                    <span>{reward.desc}</span>
-                  </div>
-                  <button
-                    type="button"
-                    className={`reward-btn ${canRedeem ? 'ready' : ''}`}
-                    disabled={!canRedeem}
-                    onClick={() => setActiveVoucherReward(reward)}
-                  >
-                    {canRedeem ? 'Kupon Aç' : `${reward.stars} Yıldız`}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
 
           <AppFooter minimal />
         </section>
@@ -386,10 +226,8 @@ export const App: React.FC = () => {
             atmalıyım?
           </h1>
           <p>
-            Atığın fotoğrafını çek veya adını yaz; Yeşil Asistan kampüs kurallarına göre hangi geri dönüşüm kutusuna atman gerektiğini anında söylesin.
+            Atığın fotoğrafını çek veya adını yaz; Yeşil Asistan hangi geri dönüşüm kutusuna atman gerektiğini anında söylesin.
           </p>
-
-          <WasteSampleCards onSelectSample={handleSelectSample} disabled={isAnalyzing} />
 
           <div className="chat-container">
             {messages.map((msg) => (
@@ -418,6 +256,7 @@ export const App: React.FC = () => {
               <img src={selectedImage} alt="Önizleme" />
               <span>Fotoğraf analize hazır</span>
               <button
+                type="button"
                 className="remove-img-btn"
                 onClick={() => setSelectedImage(null)}
                 aria-label="Fotoğrafı kaldır"
@@ -437,6 +276,7 @@ export const App: React.FC = () => {
               style={{ display: 'none' }}
             />
             <button
+              type="button"
               className="icon-action-btn"
               onClick={() => fileInputRef.current?.click()}
               aria-label="Fotoğraf yükle veya çek"
@@ -454,8 +294,9 @@ export const App: React.FC = () => {
               }}
             />
             <button
+              type="button"
               className="icon-action-btn send"
-              onClick={() => handleSendMessage()}
+              onClick={handleSendMessage}
               disabled={!inputText.trim() && !selectedImage}
               aria-label="Gönder"
             >
@@ -476,7 +317,7 @@ export const App: React.FC = () => {
             ve ayarlar.
           </h1>
           <p>
-            QR kod okuttuğunda yıldızlarının kaybolmaması için öğrenci numaranla hızlı eşleştirme yapabilirsin.
+            Yıldızlarının kaybolmaması için cüzdanını öğrenci numaranla bu cihaza eşleştirebilirsin.
           </p>
 
           <StudentIdCard
@@ -495,7 +336,7 @@ export const App: React.FC = () => {
                     {wallet.profile.studentId} · {wallet.profile.department}
                   </div>
                 </div>
-                <button className="back" onClick={handleLogout} aria-label="Çıkış yap">
+                <button type="button" className="back" onClick={handleLogout} aria-label="Çıkış yap">
                   <Icon name="logout" size={18} />
                 </button>
               </div>
@@ -544,29 +385,6 @@ export const App: React.FC = () => {
             </form>
           )}
 
-          <AchievementBadges badges={badges} />
-
-          <RecyclingBreakdown history={wallet.history} />
-
-          <div className="panel" style={{ marginTop: 16 }}>
-            <div className="toggle-row">
-              <div>
-                <strong>SAÜ Esentepe Kampüs Doğrulaması</strong>
-                <p className="small" style={{ marginTop: 4 }}>
-                  Evden okutmayı önlemek için GPS konumunu SAÜ kampüsüyle doğrular. Test veya sunum amaçlı kapatılabilir.
-                </p>
-              </div>
-              <label className="switch">
-                <input
-                  type="checkbox"
-                  checked={wallet.geofenceEnabled}
-                  onChange={(e) => handleToggleGeofence(e.target.checked)}
-                />
-                <span className="slider" />
-              </label>
-            </div>
-          </div>
-
           <div className="panel" style={{ marginTop: 16 }}>
             <strong>Google AI Studio (Gemini) Anahtarı (İsteğe Bağlı)</strong>
             <p className="small" style={{ marginTop: 4, marginBottom: 10 }}>
@@ -583,20 +401,9 @@ export const App: React.FC = () => {
             />
           </div>
 
-          <div className="note">
-            QR kod bağlantısı testi için adresin sonuna <strong>?scan=plastic</strong>, <strong>?scan=paper</strong> veya <strong>?scan=battery</strong> ekleyerek doğrudan yıldız kazanımını deneyimleyebilirsin.
-          </div>
-
           <AppFooter />
         </section>
       )}
-
-      <QrScannerModal
-        isOpen={showQrModal}
-        history={wallet.history}
-        onClose={() => setShowQrModal(false)}
-        onScanSuccess={registerQrScan}
-      />
 
       {activeVoucherReward && (
         <RewardModal
@@ -606,11 +413,7 @@ export const App: React.FC = () => {
         />
       )}
 
-      <BottomNavigation
-        activeTab={activeTab}
-        onSelectTab={setActiveTab}
-        onOpenQrScanner={() => setShowQrModal(true)}
-      />
+      <BottomNavigation activeTab={activeTab} onSelectTab={setActiveTab} />
     </main>
   );
 };
