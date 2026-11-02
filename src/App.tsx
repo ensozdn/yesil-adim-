@@ -11,7 +11,6 @@ import { Icon } from './components/Icon';
 import { ImpactCard } from './components/ImpactCard';
 import { RewardModal } from './components/RewardModal';
 import { QrScannerModal } from './components/QrScannerModal';
-import { FacultyLeaderboard } from './components/FacultyLeaderboard';
 import { StudentIdCard } from './components/StudentIdCard';
 import { AchievementBadges } from './components/AchievementBadges';
 import { RecyclingBreakdown } from './components/RecyclingBreakdown';
@@ -23,10 +22,10 @@ import { QuickActionCards } from './components/QuickActionCards';
 import { GainsOverviewCard } from './components/GainsOverviewCard';
 import { FeaturedRewardsBanner } from './components/FeaturedRewardsBanner';
 import { BottomNavigation } from './components/BottomNavigation';
+import { SplashScreen } from './components/SplashScreen';
 import { analyzeWasteInput } from './services/wasteAiService';
 import { calculateEcoImpact } from './services/impactService';
 import { checkScanEligibility } from './services/cooldownService';
-import { getFacultyStandings } from './services/leaderboardService';
 import { calculateBadges } from './services/badgeService';
 import './styles.css';
 
@@ -90,6 +89,7 @@ export const App: React.FC = () => {
     }
   });
 
+  const [showSplash, setShowSplash] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<NavigationTab>('home');
   const [scanToast, setScanToast] = useState<string | null>(null);
   const [showQrModal, setShowQrModal] = useState<boolean>(false);
@@ -101,7 +101,7 @@ export const App: React.FC = () => {
       id: 'welcome-msg',
       sender: 'assistant',
       text: 'Merhaba! Hangi atığı hangi kutuya atacağından emin değilsen fotoğrafını yükleyebilir veya doğrudan bana sorabilirsin. Örneğin: "Yağlı pizza kutusunu nereye atmalıyım?"',
-      recommendedBin: 'AI Atık Asistanı Hazır',
+      recommendedBin: 'Yeşil Asistan Hazır',
       timestamp: 'Şimdi'
     }
   ]);
@@ -288,12 +288,15 @@ export const App: React.FC = () => {
 
   const levelInfo = getLevelData(wallet.lifetimeStars);
   const ecoImpact = calculateEcoImpact(wallet.lifetimeStars, wallet.history);
-  const facultyStandings = getFacultyStandings(wallet.profile.department, wallet.lifetimeStars);
   const badges = calculateBadges(wallet);
   const weeklyRewardTarget = 20;
 
   return (
     <main className="app">
+      {showSplash && (
+        <SplashScreen onFinish={() => setShowSplash(false)} durationMs={4000} />
+      )}
+
       <AppHeader
         profile={wallet.profile}
         stars={wallet.stars}
@@ -329,15 +332,17 @@ export const App: React.FC = () => {
             stars={wallet.stars}
             targetStars={weeklyRewardTarget}
             history={wallet.history}
-            onViewDetails={() => setActiveTab('leaderboard')}
+            onViewDetails={() => setActiveTab('profile')}
           />
 
           <FeaturedRewardsBanner
             rewards={REWARD_TIERS}
             currentStars={wallet.stars}
             onSelectReward={(reward) => setActiveVoucherReward(reward)}
-            onViewAll={() => setActiveTab('leaderboard')}
+            onViewAll={() => setActiveTab('profile')}
           />
+
+          <ImpactCard impact={ecoImpact} />
 
           <div className="sectionhead" style={{ marginTop: 20 }}>
             <strong>Kampüs Yıldız Ödülleri</strong>
@@ -372,65 +377,16 @@ export const App: React.FC = () => {
         </section>
       )}
 
-      {activeTab === 'leaderboard' && (
-        <section className="view active">
-          <div className="eyebrow">FAKÜLTE REKABETİ VE LİG</div>
-          <h1>
-            Kampüsün
-            <br />
-            yeşil ligi.
-          </h1>
-          <p>
-            Her geri dönüşüm kendi fakültene puan kazandırır; ay sonunda en çok yıldız toplayan fakülteye kampüs ayrıcalığı verilir.
-          </p>
-
-          <FacultyLeaderboard standings={facultyStandings} />
-
-          <ImpactCard impact={ecoImpact} />
-
-          <div className="sectionhead" style={{ marginTop: 20 }}>
-            <strong>Seviye ve Ödül Durumu</strong>
-            <span className="small">Seviye {levelInfo.level}</span>
-          </div>
-          <div className="panel">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-              <div>
-                <strong>{levelInfo.name}</strong>
-                <div className="small" style={{ marginTop: 4 }}>
-                  Toplam {wallet.lifetimeStars} Yıldız · {wallet.streak} günlük seri
-                </div>
-              </div>
-              <div className="taskicon">
-                <Icon name="spark" />
-              </div>
-            </div>
-            <div className="progress-track">
-              <div
-                className="progress-fill"
-                style={{
-                  width: `${Math.min(100, (wallet.lifetimeStars / levelInfo.nextTarget) * 100)}%`
-                }}
-              />
-            </div>
-            <div className="small">
-              Sonraki seviyeye {Math.max(0, levelInfo.nextTarget - wallet.lifetimeStars)} yıldız kaldı
-            </div>
-          </div>
-
-          <AppFooter minimal />
-        </section>
-      )}
-
       {activeTab === 'assistant' && (
         <section className="view active">
-          <div className="eyebrow">YAPAY ZEKÂ DESTEKLİ AYRIŞTIRMA</div>
+          <div className="eyebrow">YEŞİL ASİSTAN · AKILLI AYRIŞTIRMA</div>
           <h1>
             Hangi kutuya
             <br />
             atmalıyım?
           </h1>
           <p>
-            Atığın fotoğrafını çek veya adını yaz; AI asistanımız kampüs kurallarına göre hangi geri dönüşüm kutusuna atman gerektiğini anında söylesin.
+            Atığın fotoğrafını çek veya adını yaz; Yeşil Asistan kampüs kurallarına göre hangi geri dönüşüm kutusuna atman gerektiğini anında söylesin.
           </p>
 
           <WasteSampleCards onSelectSample={handleSelectSample} disabled={isAnalyzing} />

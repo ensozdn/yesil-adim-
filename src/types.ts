@@ -27,15 +27,6 @@ export type IconName =
   | 'arrow-right'
   | 'pin';
 
-export interface FacultyStanding {
-  id: string;
-  name: string;
-  stars: number;
-  rank: number;
-  recycledCount: number;
-  isUserFaculty: boolean;
-}
-
 export interface RewardTier {
   id: string;
   stars: number;
@@ -43,7 +34,7 @@ export interface RewardTier {
   desc: string;
 }
 
-export type NavigationTab = 'home' | 'leaderboard' | 'assistant' | 'profile';
+export type NavigationTab = 'home' | 'assistant' | 'profile';
 
 export type WasteBinType = 'paper' | 'plastic' | 'glass' | 'battery' | 'general';
 

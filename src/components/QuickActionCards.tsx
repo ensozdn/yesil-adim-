@@ -44,11 +44,11 @@ export const QuickActionCards: React.FC<QuickActionCardsProps> = ({
         type="button"
         className="doa-action-card"
         onClick={onOpenAssistant}
-        aria-label="AI atık asistanına danış"
+        aria-label="Yeşil Asistan'a danış"
       >
         <div className="doa-card-text">
           <strong className="doa-card-title">Nereye Atmalı?</strong>
-          <span className="doa-card-subtitle">AI Atık Asistanı</span>
+          <span className="doa-card-subtitle">Yeşil Asistan</span>
         </div>
 
         <div className="doa-card-art doa-art-lens">

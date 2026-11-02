@@ -27,7 +27,7 @@ export const WasteSampleCards: React.FC<WasteSampleCardsProps> = ({
             className="sample-card"
             disabled={disabled}
             onClick={() => onSelectSample(item)}
-            aria-label={`${item.title} örneğini AI ile analiz et`}
+            aria-label={`${item.title} örneğini Yeşil Asistan ile analiz et`}
           >
             <div className="sample-card-media">
               <img
@@ -50,7 +50,7 @@ export const WasteSampleCards: React.FC<WasteSampleCardsProps> = ({
 
               <div className="sample-card-action">
                 <Icon name="spark" size={14} />
-                <span>AI ile Sor</span>
+                <span>Asistana Sor</span>
               </div>
             </div>
           </button>

@@ -81,7 +81,7 @@ export async function analyzeWasteInput(
           'Atık analiz edildi. Lütfen kutu üzerindeki yönlendirmelere dikkat ederek ayrıştırın.';
         return {
           reply: generatedText.trim(),
-          recommendedBin: 'AI Analiz Sonucu'
+          recommendedBin: 'Yeşil Asistan Analiz Sonucu'
         };
       }
     } catch {
