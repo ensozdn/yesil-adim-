@@ -29,27 +29,27 @@ const FILTER_OPTIONS: FilterOption[] = [
   },
   {
     id: 'packaging',
-    label: 'Sarı Poşet',
-    sublabel: 'Plastik · Cam · Metal',
-    dotColor: '#c98a09'
+    label: 'Plastik · Cam · Metal',
+    sublabel: 'Sarı Poşet',
+    dotColor: '#6fb42c'
   },
   {
     id: 'paper',
-    label: 'Mavi Poşet',
-    sublabel: 'Kâğıt ve Karton',
-    dotColor: '#1e6bb8'
+    label: 'Kağıt Atıklar',
+    sublabel: 'Mavi Poşet',
+    dotColor: '#144d8c'
+  },
+  {
+    id: 'domestic',
+    label: 'Diğer Atıklar',
+    sublabel: 'Koyu Gri Poşet',
+    dotColor: '#58595b'
   },
   {
     id: 'battery',
     label: 'Atık Pil',
     sublabel: 'Bina Girişleri',
-    dotColor: '#b9382c'
-  },
-  {
-    id: 'domestic',
-    label: 'Koyu Gri Poşet',
-    sublabel: 'Diğer · Evsel',
-    dotColor: '#4a5550'
+    dotColor: '#c9382b'
   }
 ];
 
@@ -79,9 +79,9 @@ const getMarkerSvgMarkup = (filter: WasteFilterType, isSelected: boolean): strin
         ${innerIcon}
       </svg>
       <span class="sau-pin-tri-dots">
-        <i style="background:#f2b705"></i>
-        <i style="background:#2b82d9"></i>
-        <i style="background:#e04f43"></i>
+        <i style="background:#6fb42c"></i>
+        <i style="background:#144d8c"></i>
+        <i style="background:#58595b"></i>
       </span>
     </div>
   `;
@@ -234,6 +234,7 @@ export const CampusWasteMap: React.FC = () => {
           </span>
         </div>
         <strong className="sau-stream-name">{meta.label}</strong>
+        <span className="sau-stream-desc">{meta.description}</span>
       </div>
     );
   };
@@ -359,6 +360,10 @@ export const CampusWasteMap: React.FC = () => {
           <div className="sau-streams-grid">
             {selectedStation.streams.map((streamKey) => renderStreamBadge(streamKey))}
           </div>
+
+          <p className="sau-sheet-warning">
+            Pil, elektronik atık, kartuş, atık yağ, tıbbi ve tehlikeli atıkların 3 bölmeli kutulara atılması yasaktır.
+          </p>
 
           <div className="sau-sheet-actions">
             <button

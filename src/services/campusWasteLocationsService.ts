@@ -11,33 +11,37 @@ export const WASTE_STREAM_META: Record<WasteStreamType, WasteStreamMeta> = {
     id: 'packaging',
     label: 'Plastik · Cam · Metal',
     bagLabel: 'Sarı Poşet',
-    description: 'Pet şişe, cam içecek şişesi, metal kutu ve temiz plastik ambalajlar.',
-    color: '#c98a09',
-    bgColor: '#fef6dc'
+    description:
+      'Şişe, kapak, kavanoz, içecek ve konserve kutusu, alüminyum kap, ataç, zımba teli, kargo poşeti.',
+    color: '#6fb42c',
+    bgColor: '#f1f9e8'
   },
   paper: {
     id: 'paper',
-    label: 'Kâğıt ve Karton',
+    label: 'Kağıt Atıklar',
     bagLabel: 'Mavi Poşet',
-    description: 'Defter, ders notları, kitap, gazete ve temiz karton kutular.',
-    color: '#1e6bb8',
-    bgColor: '#e8f2fc'
+    description:
+      'Kağıt, gazete, dergi, kitap, broşür, zarf, karton kutu. Bu kutuya ıslak atık atmayınız.',
+    color: '#144d8c',
+    bgColor: '#eaf1f9'
+  },
+  domestic: {
+    id: 'domestic',
+    label: 'Diğer Atıklar',
+    bagLabel: 'Koyu Gri Poşet',
+    description:
+      'Pizza kutusu, kağıt bardak-tabak, ıslak mendil, kağıt peçete, çay-kahve posası, sönmüş izmarit.',
+    color: '#58595b',
+    bgColor: '#eff0f1'
   },
   battery: {
     id: 'battery',
     label: 'Atık Pil Kutusu',
     bagLabel: 'Bina Girişi',
-    description: 'Bina girişlerinde yer alan kırmızı atık pil toplama kutusu.',
-    color: '#b9382c',
+    description:
+      '3 bölmeli kutulara pil atılması yasaktır; her binanın girişindeki atık pil kutusuna bırakılır.',
+    color: '#c9382b',
     bgColor: '#fceae8'
-  },
-  domestic: {
-    id: 'domestic',
-    label: 'Diğer · Evsel Atık',
-    bagLabel: 'Koyu Gri Poşet',
-    description: 'Geri kazanılamayan yağlı ambalaj, peçete ve evsel nitelikli atıklar.',
-    color: '#4a5550',
-    bgColor: '#ecefed'
   }
 };
 
