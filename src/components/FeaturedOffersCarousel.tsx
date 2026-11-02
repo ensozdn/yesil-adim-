@@ -61,3 +61,4 @@ export const FeaturedOffersCarousel: React.FC<FeaturedOffersCarouselProps> = ({
 };
 
 export default FeaturedOffersCarousel;
+

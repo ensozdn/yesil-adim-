@@ -57,3 +57,4 @@ export const CAMPUS_OFFERS: CampusOffer[] = [
     gradientTo: '#d4a03c'
   }
 ];
+
