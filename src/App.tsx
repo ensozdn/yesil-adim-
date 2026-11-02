@@ -393,22 +393,6 @@ export const App: React.FC = () => {
             </form>
           )}
 
-          <div className="panel" style={{ marginTop: 16 }}>
-            <strong>Google AI Studio (Gemini) Anahtarı (İsteğe Bağlı)</strong>
-            <p className="small" style={{ marginTop: 4, marginBottom: 10 }}>
-              Canlı görsel analizi için Gemini API anahtarı girebilirsin. Boş bırakılırsa yerleşik akıllı kampüs asistanı yanıt verir.
-            </p>
-            <input
-              type="password"
-              className="form-input"
-              placeholder="AIzaSy..."
-              value={wallet.apiKey}
-              onChange={(e) =>
-                setWallet((prev) => ({ ...prev, apiKey: e.target.value }))
-              }
-            />
-          </div>
-
           <AppFooter />
         </section>
       )}
