@@ -18,7 +18,10 @@ export type IconName =
   | 'timer'
   | 'eye'
   | 'eye-off'
-  | 'arrow-right';
+  | 'arrow-right'
+  | 'map-pin'
+  | 'locate'
+  | 'battery';
 
 export interface RewardTier {
   id: string;
@@ -35,7 +38,31 @@ export interface CampusOffer extends RewardTier {
   gradientTo: string;
 }
 
-export type NavigationTab = 'home' | 'assistant' | 'profile';
+export type NavigationTab = 'home' | 'map' | 'assistant' | 'profile';
+
+export type WasteStreamType = 'packaging' | 'paper' | 'domestic' | 'battery';
+
+export type WasteFilterType = 'all' | WasteStreamType;
+
+export interface WasteStreamMeta {
+  id: WasteStreamType;
+  label: string;
+  bagLabel: string;
+  description: string;
+  color: string;
+  bgColor: string;
+}
+
+export interface CampusWasteStation {
+  id: string;
+  title: string;
+  zone: string;
+  lat: number;
+  lng: number;
+  streams: WasteStreamType[];
+  unitCount: number;
+  locationDetail: string;
+}
 
 export interface ChatMessage {
   id: string;

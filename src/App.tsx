@@ -15,6 +15,7 @@ import { GainsOverviewCard } from './components/GainsOverviewCard';
 import { FeaturedOffersCarousel } from './components/FeaturedOffersCarousel';
 import { BottomNavigation } from './components/BottomNavigation';
 import { SplashScreen } from './components/SplashScreen';
+import { CampusWasteMap } from './components/CampusWasteMap';
 import { analyzeWasteInput } from './services/wasteAiService';
 import { CAMPUS_OFFERS } from './services/campusOffersService';
 import './styles.css';
@@ -213,6 +214,13 @@ export const App: React.FC = () => {
             onSelectOffer={(offer) => setActiveVoucherReward(offer)}
           />
 
+          <AppFooter minimal />
+        </section>
+      )}
+
+      {activeTab === 'map' && (
+        <section className="view active">
+          <CampusWasteMap />
           <AppFooter minimal />
         </section>
       )}

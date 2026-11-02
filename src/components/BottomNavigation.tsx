@@ -27,6 +27,17 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
 
         <button
           type="button"
+          className={`doa-nav-item ${activeTab === 'map' ? 'active' : ''}`}
+          onClick={() => onSelectTab('map')}
+        >
+          <div className="doa-nav-icon-wrap">
+            <Icon name="map-pin" size={22} />
+          </div>
+          <span>Atık Haritası</span>
+        </button>
+
+        <button
+          type="button"
           className={`doa-nav-item ${activeTab === 'assistant' ? 'active' : ''}`}
           onClick={() => onSelectTab('assistant')}
         >

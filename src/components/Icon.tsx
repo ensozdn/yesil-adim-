@@ -130,6 +130,28 @@ export const Icon: React.FC<IconProps> = ({ name, className = 'ico', size = 22 }
         );
       case 'arrow-right':
         return <path d="m9 18 6-6-6-6" />;
+      case 'map-pin':
+        return (
+          <>
+            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+            <circle cx="12" cy="10" r="3" />
+          </>
+        );
+      case 'locate':
+        return (
+          <>
+            <circle cx="12" cy="12" r="7" />
+            <circle cx="12" cy="12" r="2.2" />
+            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+          </>
+        );
+      case 'battery':
+        return (
+          <>
+            <rect x="6" y="6" width="12" height="15" rx="2" />
+            <path d="M9.5 6V3.5h5V6M12 10v7m-3-3.5h6" />
+          </>
+        );
       case 'leaf':
       default:
         return (
