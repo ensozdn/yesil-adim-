@@ -72,18 +72,12 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
     generateAll();
   }, [isOpen]);
 
-  useEffect(() => {
-    if (!isOpen || activeTab !== 'camera') {
-      stopCamera();
-      return;
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
     }
-
-    startCamera();
-
-    return () => {
-      stopCamera();
-    };
-  }, [isOpen, activeTab]);
+  };
 
   const startCamera = async () => {
     setCameraError(null);
@@ -107,12 +101,18 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
     }
   };
 
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
+  useEffect(() => {
+    if (!isOpen || activeTab !== 'camera') {
+      stopCamera();
+      return;
     }
-  };
+
+    startCamera();
+
+    return () => {
+      stopCamera();
+    };
+  }, [isOpen, activeTab]);
 
   const handleSelectBin = (binType: WasteBinType) => {
     stopCamera();

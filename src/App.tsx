@@ -115,16 +115,6 @@ export const App: React.FC = () => {
     }
   }, [wallet]);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const scannedBin = (params.get('scan') || params.get('task')) as WasteBinType | null;
-    if (scannedBin) {
-      const validBin: WasteBinType = BIN_LABELS[scannedBin] ? scannedBin : 'general';
-      registerQrScan(validBin);
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, []);
-
   const getLevelData = (lifetimeStars: number) => {
     if (lifetimeStars >= 20) return { level: 4, name: 'Yeşil Öncü', nextTarget: 30 };
     if (lifetimeStars >= 10) return { level: 3, name: 'Kampüs Koruyucusu', nextTarget: 20 };
@@ -174,6 +164,16 @@ export const App: React.FC = () => {
     setScanToast(`${BIN_LABELS[binType]} okutuldu · +1 Yıldız eklendi`);
     setTimeout(() => setScanToast(null), 3800);
   };
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const scannedBin = (params.get('scan') || params.get('task')) as WasteBinType | null;
+    if (scannedBin) {
+      const validBin: WasteBinType = BIN_LABELS[scannedBin] ? scannedBin : 'general';
+      registerQrScan(validBin);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   const handleRedeemReward = (rewardId: string, cost: number, title: string) => {
     if (wallet.stars < cost) return;
