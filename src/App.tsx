@@ -17,6 +17,12 @@ import { AchievementBadges } from './components/AchievementBadges';
 import { RecyclingBreakdown } from './components/RecyclingBreakdown';
 import { AppFooter } from './components/AppFooter';
 import { WasteSampleCards } from './components/WasteSampleCards';
+import { AppHeader } from './components/AppHeader';
+import { HeroWalletCard } from './components/HeroWalletCard';
+import { QuickActionCards } from './components/QuickActionCards';
+import { GainsOverviewCard } from './components/GainsOverviewCard';
+import { FeaturedRewardsBanner } from './components/FeaturedRewardsBanner';
+import { BottomNavigation } from './components/BottomNavigation';
 import { analyzeWasteInput } from './services/wasteAiService';
 import { calculateEcoImpact } from './services/impactService';
 import { checkScanEligibility } from './services/cooldownService';
@@ -285,32 +291,15 @@ export const App: React.FC = () => {
   const facultyStandings = getFacultyStandings(wallet.profile.department, wallet.lifetimeStars);
   const badges = calculateBadges(wallet);
   const weeklyRewardTarget = 20;
-  const starProgressPercent = Math.min(100, (wallet.stars / weeklyRewardTarget) * 100);
 
   return (
     <main className="app">
-      <header className="top">
-        <div className="brand">
-          <div className="brandmark">
-            <Icon name="leaf" />
-          </div>
-          <span>yeşil adım</span>
-        </div>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <div className="pill" aria-label="Yıldız bakiyesi">
-            <Icon name="star" className="ico sm star-accent" size={17} />
-            <span>{wallet.stars} Yıldız</span>
-          </div>
-          <button
-            className="pill"
-            onClick={() => setActiveTab('profile')}
-            aria-label="Öğrenci profili"
-          >
-            <Icon name="user" className="ico sm" size={17} />
-            <span>{wallet.profile.isLoggedIn ? wallet.profile.fullName.split(' ')[0] : 'Giriş'}</span>
-          </button>
-        </div>
-      </header>
+      <AppHeader
+        profile={wallet.profile}
+        stars={wallet.stars}
+        streak={wallet.streak}
+        onOpenProfile={() => setActiveTab('profile')}
+      />
 
       {scanToast && (
         <div className="toast-banner" role="status">
@@ -321,68 +310,85 @@ export const App: React.FC = () => {
 
       {activeTab === 'home' && (
         <section className="view active">
-          <div className="eyebrow">SAKARYA ÜNİVERSİTESİ · SÜRDÜRÜLEBİLİR KAMPÜS</div>
+          <HeroWalletCard
+            stars={wallet.stars}
+            levelName={levelInfo.name}
+            levelNumber={levelInfo.level}
+            onOpenRewards={() => {
+              const eligible = REWARD_TIERS.find((r) => wallet.stars >= r.stars) || REWARD_TIERS[0];
+              setActiveVoucherReward(eligible);
+            }}
+          />
+
+          <QuickActionCards
+            onStartScan={() => setShowQrModal(true)}
+            onOpenAssistant={() => setActiveTab('assistant')}
+          />
+
+          <GainsOverviewCard
+            stars={wallet.stars}
+            targetStars={weeklyRewardTarget}
+            history={wallet.history}
+            onViewDetails={() => setActiveTab('leaderboard')}
+          />
+
+          <FeaturedRewardsBanner
+            rewards={REWARD_TIERS}
+            currentStars={wallet.stars}
+            onSelectReward={(reward) => setActiveVoucherReward(reward)}
+            onViewAll={() => setActiveTab('leaderboard')}
+          />
+
+          <div className="sectionhead" style={{ marginTop: 20 }}>
+            <strong>Kampüs Yıldız Ödülleri</strong>
+            <span className="small">Kuponlar</span>
+          </div>
+          <div className="task-list">
+            {REWARD_TIERS.map((reward) => {
+              const canRedeem = wallet.stars >= reward.stars;
+              return (
+                <div key={reward.id} className="taskrow">
+                  <div className="taskicon">
+                    <Icon name="coffee" />
+                  </div>
+                  <div className="taskmeta">
+                    <strong>{reward.title}</strong>
+                    <span>{reward.desc}</span>
+                  </div>
+                  <button
+                    type="button"
+                    className={`reward-btn ${canRedeem ? 'ready' : ''}`}
+                    disabled={!canRedeem}
+                    onClick={() => setActiveVoucherReward(reward)}
+                  >
+                    {canRedeem ? 'Kupon Aç' : `${reward.stars} Yıldız`}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          <AppFooter minimal />
+        </section>
+      )}
+
+      {activeTab === 'leaderboard' && (
+        <section className="view active">
+          <div className="eyebrow">FAKÜLTE REKABETİ VE LİG</div>
           <h1>
-            Her geri dönüşüm
+            Kampüsün
             <br />
-            bir yıldız kazandırır.
+            yeşil ligi.
           </h1>
           <p>
-            Kampüsteki kutuların üzerindeki QR kodu okut, yıldız bakiyeni artır ve hangi atığı nereye atacağını AI asistana sor.
+            Her geri dönüşüm kendi fakültene puan kazandırır; ay sonunda en çok yıldız toplayan fakülteye kampüs ayrıcalığı verilir.
           </p>
-
-          <div className="hero">
-            <span className="tag">YILDIZ CÜZDANI</span>
-            <div className="star-balance-row">
-              <span className="star-big-num">{wallet.stars}</span>
-              <Icon name="star" size={32} className="star-gold" />
-              <span className="star-target-text">/ {weeklyRewardTarget} Haftalık Hedef</span>
-            </div>
-            <h2>Atığını ayrıştır, QR okut ve haftalık ödülünü topla.</h2>
-            <p>
-              Haftada 20 yıldıza ulaştığında kampüs kahvesi veya yemekhane indirim kuponu kazanırsın.
-            </p>
-            <div className="hero-progress-track">
-              <div
-                className="hero-progress-fill"
-                style={{ width: `${starProgressPercent}%` }}
-              />
-            </div>
-            <div className="hero-art">
-              <svg
-                className="ico"
-                style={{ width: 72, height: 72 }}
-                viewBox="0 0 64 64"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M51 8C31 7 15 16 13 32c-1 9 6 16 15 14C44 43 51 26 51 8Z" />
-                <path d="M8 56c9-15 20-25 34-35" />
-                <path d="m26 38-1-11m10 1 10 1" />
-              </svg>
-            </div>
-          </div>
-
-          <div className="action-grid">
-            <button className="primary" onClick={() => setShowQrModal(true)}>
-              <Icon name="qr" size={20} />
-              <span>QR Okut (+1 Yıldız)</span>
-            </button>
-            <button className="secondary" onClick={() => setActiveTab('assistant')}>
-              <Icon name="chat" size={20} />
-              <span>AI Atık Asistanına Sor</span>
-            </button>
-          </div>
-
-          <ImpactCard impact={ecoImpact} />
 
           <FacultyLeaderboard standings={facultyStandings} />
 
-          <div className="sectionhead">
+          <ImpactCard impact={ecoImpact} />
+
+          <div className="sectionhead" style={{ marginTop: 20 }}>
             <strong>Seviye ve Ödül Durumu</strong>
             <span className="small">Seviye {levelInfo.level}</span>
           </div>
@@ -409,34 +415,6 @@ export const App: React.FC = () => {
             <div className="small">
               Sonraki seviyeye {Math.max(0, levelInfo.nextTarget - wallet.lifetimeStars)} yıldız kaldı
             </div>
-          </div>
-
-          <div className="sectionhead">
-            <strong>Yıldız Ödülleri</strong>
-            <span className="small">Kampüs Ayrıcalıkları</span>
-          </div>
-          <div className="task-list">
-            {REWARD_TIERS.map((reward) => {
-              const canRedeem = wallet.stars >= reward.stars;
-              return (
-                <div key={reward.id} className="taskrow">
-                  <div className="taskicon">
-                    <Icon name="coffee" />
-                  </div>
-                  <div className="taskmeta">
-                    <strong>{reward.title}</strong>
-                    <span>{reward.desc}</span>
-                  </div>
-                  <button
-                    className={`reward-btn ${canRedeem ? 'ready' : ''}`}
-                    disabled={!canRedeem}
-                    onClick={() => setActiveVoucherReward(reward)}
-                  >
-                    {canRedeem ? 'Kupon Aç' : `${reward.stars} Yıldız`}
-                  </button>
-                </div>
-              );
-            })}
           </div>
 
           <AppFooter minimal />
@@ -672,29 +650,11 @@ export const App: React.FC = () => {
         />
       )}
 
-      <nav className="bottomnav" aria-label="Ana gezinme">
-        <button
-          className={`navbtn ${activeTab === 'home' ? 'active' : ''}`}
-          onClick={() => setActiveTab('home')}
-        >
-          <Icon name="home" />
-          <span>Yıldızlarım</span>
-        </button>
-        <button
-          className={`navbtn ${activeTab === 'assistant' ? 'active' : ''}`}
-          onClick={() => setActiveTab('assistant')}
-        >
-          <Icon name="chat" />
-          <span>AI Asistan</span>
-        </button>
-        <button
-          className={`navbtn ${activeTab === 'profile' ? 'active' : ''}`}
-          onClick={() => setActiveTab('profile')}
-        >
-          <Icon name="user" />
-          <span>Profil</span>
-        </button>
-      </nav>
+      <BottomNavigation
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+        onOpenQrScanner={() => setShowQrModal(true)}
+      />
     </main>
   );
 };

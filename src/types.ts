@@ -21,7 +21,11 @@ export type IconName =
   | 'water'
   | 'cloud'
   | 'timer'
-  | 'trophy';
+  | 'trophy'
+  | 'eye'
+  | 'eye-off'
+  | 'arrow-right'
+  | 'pin';
 
 export interface FacultyStanding {
   id: string;
@@ -39,7 +43,7 @@ export interface RewardTier {
   desc: string;
 }
 
-export type NavigationTab = 'home' | 'assistant' | 'profile';
+export type NavigationTab = 'home' | 'leaderboard' | 'assistant' | 'profile';
 
 export type WasteBinType = 'paper' | 'plastic' | 'glass' | 'battery' | 'general';
 

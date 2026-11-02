@@ -143,6 +143,31 @@ export const Icon: React.FC<IconProps> = ({ name, className = 'ico', size = 22 }
             <path d="M6 4h12v7a6 6 0 0 1-12 0V4Z" />
           </>
         );
+      case 'eye':
+        return (
+          <>
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+            <circle cx="12" cy="12" r="3" />
+          </>
+        );
+      case 'eye-off':
+        return (
+          <>
+            <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+            <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+            <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+            <line x1="2" x2="22" y1="2" y2="22" />
+          </>
+        );
+      case 'arrow-right':
+        return <path d="m9 18 6-6-6-6" />;
+      case 'pin':
+        return (
+          <>
+            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+            <circle cx="12" cy="10" r="3" />
+          </>
+        );
       case 'leaf':
       default:
         return (
