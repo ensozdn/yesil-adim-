@@ -1856,6 +1856,10 @@ p {
 }
 
 #netlify-drawer,
+#nl-badge-frame,
+#nl-hud-frame,
+iframe[title*="Netlify"],
+iframe[id*="nl-"],
 [data-netlify-drawer],
 .netlify-drawer,
 netlify-drawer,
@@ -1876,4 +1880,5 @@ div[data-testid*="netlify"],
   z-index: -9999 !important;
   width: 0 !important;
   height: 0 !important;
+  clip-path: circle(0) !important;
 }
