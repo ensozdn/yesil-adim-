@@ -152,6 +152,15 @@ export const Icon: React.FC<IconProps> = ({ name, className = 'ico', size = 22 }
             <path d="M9.5 6V3.5h5V6M12 10v7m-3-3.5h6" />
           </>
         );
+      case 'shield-check':
+        return (
+          <>
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+            <path d="m9 12 2 2 4-4" />
+          </>
+        );
+      case 'navigation':
+        return <polygon points="3 11 22 2 13 21 11 13 3 11" />;
       case 'leaf':
       default:
         return (

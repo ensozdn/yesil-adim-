@@ -21,7 +21,9 @@ export type IconName =
   | 'arrow-right'
   | 'map-pin'
   | 'locate'
-  | 'battery';
+  | 'battery'
+  | 'shield-check'
+  | 'navigation';
 
 export interface RewardTier {
   id: string;
@@ -73,6 +75,14 @@ export interface ChatMessage {
   timestamp: string;
 }
 
+export interface VerificationRecord {
+  stationId: string;
+  stationTitle: string;
+  stream: WasteStreamType;
+  timestamp: number;
+  proofImageUrl?: string;
+}
+
 export interface StudentProfile {
   studentId: string;
   fullName: string;
@@ -87,4 +97,8 @@ export interface WalletState {
   redeemedRewards: string[];
   profile: StudentProfile;
   apiKey: string;
+  dailyVerificationsCount?: number;
+  lastVerificationDate?: string;
+  lastVerificationTimestamp?: number;
+  recentVerifications?: VerificationRecord[];
 }

@@ -20,6 +20,10 @@ interface FilterOption {
   dotColor: string;
 }
 
+interface CampusWasteMapProps {
+  onStartVerification?: (station: CampusWasteStation) => void;
+}
+
 const FILTER_OPTIONS: FilterOption[] = [
   {
     id: 'all',
@@ -87,7 +91,9 @@ const getMarkerSvgMarkup = (filter: WasteFilterType, isSelected: boolean): strin
   `;
 };
 
-export const CampusWasteMap: React.FC = () => {
+export const CampusWasteMap: React.FC<CampusWasteMapProps> = ({
+  onStartVerification
+}) => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
@@ -364,6 +370,15 @@ export const CampusWasteMap: React.FC = () => {
           <p className="sau-sheet-warning">
             Pil, elektronik atık, kartuş, atık yağ, tıbbi ve tehlikeli atıkların 3 bölmeli kutulara atılması yasaktır.
           </p>
+
+          <button
+            type="button"
+            className="sau-sheet-verify-btn"
+            onClick={() => onStartVerification?.(selectedStation)}
+          >
+            <Icon name="shield-check" size={18} />
+            <span>Kutunun Başındayım · Atık Doğrula</span>
+          </button>
 
           <div className="sau-sheet-actions">
             <button

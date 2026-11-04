@@ -3,7 +3,8 @@ import type {
   NavigationTab,
   WalletState,
   ChatMessage,
-  RewardTier
+  RewardTier,
+  CampusWasteStation
 } from './types';
 import { Icon } from './components/Icon';
 import { RewardModal } from './components/RewardModal';
@@ -16,6 +17,7 @@ import { FeaturedOffersCarousel } from './components/FeaturedOffersCarousel';
 import { BottomNavigation } from './components/BottomNavigation';
 import { SplashScreen } from './components/SplashScreen';
 import { CampusWasteMap } from './components/CampusWasteMap';
+import { WasteVerificationModal } from './components/WasteVerificationModal';
 import { analyzeWasteInput } from './services/wasteAiService';
 import { CAMPUS_OFFERS } from './services/campusOffersService';
 import './styles.css';
@@ -58,6 +60,8 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<NavigationTab>('home');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [activeVoucherReward, setActiveVoucherReward] = useState<RewardTier | null>(null);
+  const [isVerificationOpen, setIsVerificationOpen] = useState<boolean>(false);
+  const [verificationStation, setVerificationStation] = useState<CampusWasteStation | null>(null);
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -206,6 +210,25 @@ export const App: React.FC = () => {
             onOpenRewards={handleOpenFirstOffer}
           />
 
+          <div
+            className="home-verification-trigger"
+            onClick={() => {
+              setVerificationStation(null);
+              setIsVerificationOpen(true);
+            }}
+            role="button"
+            tabIndex={0}
+          >
+            <div className="home-verif-icon-circle">
+              <Icon name="shield-check" size={22} />
+            </div>
+            <div className="home-verif-content">
+              <strong>Kutu Başında Doğrulanmış Ayrıştırma</strong>
+              <small>Kampüs atık kutusunun yanındayken teyit et, +1 Yeşil Yıldız kazan.</small>
+            </div>
+            <Icon name="arrow-right" size={18} className="home-verif-arrow" />
+          </div>
+
           <GainsOverviewCard stars={wallet.stars} targetStars={WEEKLY_REWARD_TARGET} />
 
           <FeaturedOffersCarousel
@@ -220,7 +243,12 @@ export const App: React.FC = () => {
 
       {activeTab === 'map' && (
         <section className="view active">
-          <CampusWasteMap />
+          <CampusWasteMap
+            onStartVerification={(station) => {
+              setVerificationStation(station);
+              setIsVerificationOpen(true);
+            }}
+          />
           <AppFooter minimal />
         </section>
       )}
@@ -273,6 +301,27 @@ export const App: React.FC = () => {
               </button>
             </div>
           )}
+
+          <div className="chat-verify-banner">
+            <div className="chat-verify-texts">
+              <div className="chat-verify-title">
+                <Icon name="shield-check" size={16} />
+                <strong>Atığı Kutuya Bırakırken Doğrula</strong>
+              </div>
+              <small>Yalnızca kutu başında teyit edilen ayrıştırmalar Yeşil Yıldız kazandırır.</small>
+            </div>
+            <button
+              type="button"
+              className="chat-verify-pill-btn"
+              onClick={() => {
+                setVerificationStation(null);
+                setIsVerificationOpen(true);
+              }}
+            >
+              <span>Teyit Et</span>
+              <Icon name="arrow-right" size={13} />
+            </button>
+          </div>
 
           <div className="chat-input-row">
             <input
@@ -404,6 +453,17 @@ export const App: React.FC = () => {
           onConfirmRedeem={handleRedeemReward}
         />
       )}
+
+      <WasteVerificationModal
+        isOpen={isVerificationOpen}
+        wallet={wallet}
+        initialStation={verificationStation}
+        onClose={() => setIsVerificationOpen(false)}
+        onSuccess={(updated) => {
+          setWallet(updated);
+          showToast('Doğrulanmış ayrıştırma tamamlandı! +1 Yıldız eklendi.', 3500);
+        }}
+      />
 
       <BottomNavigation activeTab={activeTab} onSelectTab={setActiveTab} />
     </main>
