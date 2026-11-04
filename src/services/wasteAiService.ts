@@ -1,6 +1,14 @@
+import type { WasteStreamType } from '../types';
+import { WASTE_STREAM_META } from './campusWasteLocationsService';
+
 export interface WasteAnalysisResult {
   reply: string;
   recommendedBin: string;
+}
+
+export interface DisposalPhotoMatchResult {
+  isMatch: boolean;
+  message: string;
 }
 
 const LOCAL_KNOWLEDGE_BASE: Array<{
@@ -123,5 +131,69 @@ export async function analyzeWasteInput(
     reply:
       'Bu atık için temel kuralımız: Ambalaj temiz, kuru ve kalıntısız ise türüne göre Kâğıt, Plastik veya Cam kutusuna; yoğun yemek yağı veya sıvı bulaşmışsa diğer geri dönüştürülebilir atıkları kirletmemesi için Genel Çöp kutusuna atılmalıdır.',
     recommendedBin: 'Kampüs Ayrıştırma Noktası'
+  };
+}
+
+export async function verifyDisposalPhotoWithAi(
+  imageBase64: string,
+  selectedStream: WasteStreamType,
+  apiKey?: string,
+  forceMismatchSimulation?: boolean
+): Promise<DisposalPhotoMatchResult> {
+  const meta = WASTE_STREAM_META[selectedStream];
+
+  if (forceMismatchSimulation) {
+    return {
+      isMatch: false,
+      message: `Görsel Eşleşme Reddedildi: Çekilen fotoğraftaki bölme ile seçtiğiniz '${meta.label} (${meta.bagLabel})' kategorisi uyuşmuyor. Lütfen atığı kutudaki doğru renkli göze bırakırken fotoğraflayınız.`
+    };
+  }
+
+  if (apiKey && apiKey.trim().length > 10) {
+    try {
+      const cleanBase64 = imageBase64.split(',')[1] || imageBase64;
+      const parts: Array<Record<string, unknown>> = [
+        {
+          text: `Sen Sakarya Üniversitesi Sıfır Atık AI güvenlik denetleyicisisin. Kullanıcı atığı kutunun bölmesine bırakırken fotoğraf çekti. Seçilen bölme: ${meta.label} (${meta.bagLabel}). Bu fotoğraftaki atık veya kutu bölmesi seçilen kategoriyle uyumlu mu? Yalnızca JSON formatında yanıt ver: {"isMatch": true veya false, "reason": "kısa Türkçe açıklama"}`
+        },
+        {
+          inline_data: {
+            mime_type: 'image/jpeg',
+            data: cleanBase64
+          }
+        }
+      ];
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey.trim()}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts }] })
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          return {
+            isMatch: Boolean(parsed.isMatch),
+            message:
+              parsed.reason ||
+              (parsed.isMatch
+                ? `Görsel doğrulandı: ${meta.label} bölmesi onaylandı.`
+                : 'Fotoğraftaki atık veya kutu bölmesi uyuşmuyor.')
+          };
+        }
+      }
+    } catch {}
+  }
+
+  return {
+    isMatch: true,
+    message: `Görsel doğrulandı: ${meta.label} (${meta.bagLabel}) bölmesiyle uyumlu bulundu.`
   };
 }

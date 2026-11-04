@@ -17,6 +17,7 @@ import {
   recordDisposalVerification,
   setSimulationMode
 } from '../services/wasteVerificationService';
+import { verifyDisposalPhotoWithAi } from '../services/wasteAiService';
 import { Icon } from './Icon';
 
 interface WasteVerificationModalProps {
@@ -51,6 +52,8 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
   );
   const [proofImage, setProofImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [simulateMismatch, setSimulateMismatch] = useState<boolean>(false);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -127,19 +130,37 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
     reader.readAsDataURL(file);
   };
 
-  const handleConfirmDisposal = () => {
+  const handleConfirmDisposal = async () => {
+    if (!proofImage && !simulation) {
+      setAiError('Lütfen atığı kutunun bölmesine bırakırken tek bir kare fotoğraf çekiniz.');
+      return;
+    }
+
     setIsSubmitting(true);
-    setTimeout(() => {
-      const { nextWallet } = recordDisposalVerification(
-        wallet,
-        selectedStation,
-        selectedStream,
-        proofImage || undefined
-      );
+    setAiError(null);
+
+    const check = await verifyDisposalPhotoWithAi(
+      proofImage || 'simulated',
+      selectedStream,
+      wallet.apiKey,
+      simulateMismatch
+    );
+
+    if (!check.isMatch) {
       setIsSubmitting(false);
-      setStep('success');
-      onSuccess(nextWallet);
-    }, 600);
+      setAiError(check.message);
+      return;
+    }
+
+    const { nextWallet } = recordDisposalVerification(
+      wallet,
+      selectedStation,
+      selectedStream,
+      proofImage || undefined
+    );
+    setIsSubmitting(false);
+    setStep('success');
+    onSuccess(nextWallet);
   };
 
   const renderLocationStep = () => {
@@ -300,7 +321,23 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
         </div>
 
         <div className="verif-camera-box">
-          <label className="verif-label">Kutu Başında Atık Fotoğrafı (Opsiyonel / Teyit)</label>
+          <label className="verif-label">Kutu Başında Atık Fotoğrafı (AI Görsel Eşleştirme)</label>
+
+          {simulation && (
+            <div className="verif-sim-test-bar">
+              <span className="verif-sim-test-label">Hoca & Güvenlik Testi:</span>
+              <button
+                type="button"
+                className={`verif-toggle-pill ${simulateMismatch ? 'active-alert' : ''}`}
+                onClick={() => {
+                  setSimulateMismatch(!simulateMismatch);
+                  setAiError(null);
+                }}
+              >
+                {simulateMismatch ? 'Yanlış Kutu Senaryosu Aktif' : 'Normal Eşleşme'}
+              </button>
+            </div>
+          )}
 
           {proofImage ? (
             <div className="verif-preview-wrapper">
@@ -308,7 +345,10 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
               <button
                 type="button"
                 className="verif-retake-btn"
-                onClick={() => setProofImage(null)}
+                onClick={() => {
+                  setProofImage(null);
+                  setAiError(null);
+                }}
               >
                 <Icon name="close" size={14} />
                 <span>Fotoğrafı Değiştir</span>
@@ -336,6 +376,18 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
             style={{ display: 'none' }}
             onChange={handlePhotoCapture}
           />
+
+          {aiError && (
+            <div className="verif-ai-alert error" role="alert">
+              <div className="verif-ai-alert-icon">
+                <Icon name="close" size={16} />
+              </div>
+              <div className="verif-ai-alert-text">
+                <strong>AI Görsel Doğrulama Reddi</strong>
+                <p>{aiError}</p>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="verif-actions-row">
