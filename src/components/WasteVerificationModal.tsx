@@ -23,6 +23,7 @@ interface WasteVerificationModalProps {
   isOpen: boolean;
   wallet: WalletState;
   initialStation?: CampusWasteStation | null;
+  initialStream?: WasteStreamType | null;
   onClose: () => void;
   onSuccess: (updatedWallet: WalletState) => void;
 }
@@ -33,6 +34,7 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
   isOpen,
   wallet,
   initialStation,
+  initialStream,
   onClose,
   onSuccess
 }) => {
@@ -44,7 +46,9 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocating, setIsLocating] = useState<boolean>(false);
   const [locationError, setLocationError] = useState<string | null>(null);
-  const [selectedStream, setSelectedStream] = useState<WasteStreamType>('packaging');
+  const [selectedStream, setSelectedStream] = useState<WasteStreamType>(
+    () => initialStream || 'packaging'
+  );
   const [proofImage, setProofImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 

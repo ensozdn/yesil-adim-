@@ -170,3 +170,4 @@ export const recordDisposalVerification = (
 
   return { nextWallet, earnedStars: 1 };
 };
+

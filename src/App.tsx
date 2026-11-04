@@ -4,7 +4,8 @@ import type {
   WalletState,
   ChatMessage,
   RewardTier,
-  CampusWasteStation
+  CampusWasteStation,
+  WasteStreamType
 } from './types';
 import { Icon } from './components/Icon';
 import { RewardModal } from './components/RewardModal';
@@ -20,6 +21,8 @@ import { CampusWasteMap } from './components/CampusWasteMap';
 import { WasteVerificationModal } from './components/WasteVerificationModal';
 import { analyzeWasteInput } from './services/wasteAiService';
 import { CAMPUS_OFFERS } from './services/campusOffersService';
+import { WASTE_STREAM_META } from './services/campusWasteLocationsService';
+import { checkVerificationEligibility } from './services/wasteVerificationService';
 import './styles.css';
 
 const STORAGE_KEY = 'green-step-wallet-v1';
@@ -62,6 +65,22 @@ export const App: React.FC = () => {
   const [activeVoucherReward, setActiveVoucherReward] = useState<RewardTier | null>(null);
   const [isVerificationOpen, setIsVerificationOpen] = useState<boolean>(false);
   const [verificationStation, setVerificationStation] = useState<CampusWasteStation | null>(null);
+  const [verificationStream, setVerificationStream] = useState<WasteStreamType | null>(null);
+
+  const detectStreamFromText = (text: string): WasteStreamType => {
+    const lower = text.toLocaleLowerCase('tr-TR');
+    if (lower.includes('pil') || lower.includes('batarya')) return 'battery';
+    if (lower.includes('kağıt') || lower.includes('karton') || lower.includes('mavi')) return 'paper';
+    if (
+      lower.includes('diğer') ||
+      lower.includes('evsel') ||
+      lower.includes('genel çöp') ||
+      lower.includes('gri')
+    ) {
+      return 'domestic';
+    }
+    return 'packaging';
+  };
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -210,24 +229,39 @@ export const App: React.FC = () => {
             onOpenRewards={handleOpenFirstOffer}
           />
 
-          <div
-            className="home-verification-trigger"
-            onClick={() => {
-              setVerificationStation(null);
-              setIsVerificationOpen(true);
-            }}
-            role="button"
-            tabIndex={0}
-          >
-            <div className="home-verif-icon-circle">
-              <Icon name="shield-check" size={22} />
-            </div>
-            <div className="home-verif-content">
-              <strong>Kutu Başında Doğrulanmış Ayrıştırma</strong>
-              <small>Kampüs atık kutusunun yanındayken teyit et, +1 Yeşil Yıldız kazan.</small>
-            </div>
-            <Icon name="arrow-right" size={18} className="home-verif-arrow" />
-          </div>
+          {(() => {
+            const homeEligibility = checkVerificationEligibility(wallet, true);
+            return (
+              <div
+                className="home-verification-trigger"
+                onClick={() => {
+                  setVerificationStation(null);
+                  setVerificationStream(null);
+                  setIsVerificationOpen(true);
+                }}
+                role="button"
+                tabIndex={0}
+              >
+                <div className="home-verif-icon-circle">
+                  <Icon name="shield-check" size={22} />
+                </div>
+                <div className="home-verif-content">
+                  <div className="home-verif-top-row">
+                    <strong>Kutu Başında Doğrulanmış Ayrıştırma</strong>
+                    <span className="home-verif-badge">
+                      {homeEligibility.remainingDailyCount} / 2 Günlük Hak
+                    </span>
+                  </div>
+                  <small>
+                    {homeEligibility.reason === 'cooldown'
+                      ? `${homeEligibility.cooldownRemainingMinutes} dk bekleme süresinde · Kutu başında teyit et`
+                      : 'Kampüs atık kutusunun yanındayken teyit et, +1 Yeşil Yıldız kazan.'}
+                  </small>
+                </div>
+                <Icon name="arrow-right" size={18} className="home-verif-arrow" />
+              </div>
+            );
+          })()}
 
           <GainsOverviewCard stars={wallet.stars} targetStars={WEEKLY_REWARD_TARGET} />
 
@@ -278,6 +312,23 @@ export const App: React.FC = () => {
                   </div>
                 )}
                 <p className="chat-text">{msg.text}</p>
+                {msg.sender === 'assistant' && msg.id !== 'welcome-msg' && (
+                  <button
+                    type="button"
+                    className="chat-msg-action-btn"
+                    onClick={() => {
+                      const detected = detectStreamFromText(
+                        msg.text + ' ' + (msg.recommendedBin || '')
+                      );
+                      setVerificationStream(detected);
+                      setVerificationStation(null);
+                      setIsVerificationOpen(true);
+                    }}
+                  >
+                    <Icon name="shield-check" size={15} />
+                    <span>Kutuda Doğrula & Puan Kazan</span>
+                  </button>
+                )}
               </div>
             ))}
             {isAnalyzing && (
@@ -442,6 +493,44 @@ export const App: React.FC = () => {
             </form>
           )}
 
+          {wallet.recentVerifications && wallet.recentVerifications.length > 0 && (
+            <div className="panel" style={{ marginTop: 14 }}>
+              <strong>Son Doğrulanan Ayrıştırmalar</strong>
+              <p className="small" style={{ marginTop: 4, marginBottom: 12 }}>
+                Kutu başında teyit edilerek onaylanan kampüs geri dönüşüm kayıtların.
+              </p>
+              <div className="profile-verifs-list">
+                {wallet.recentVerifications.map((item, idx) => {
+                  const meta = WASTE_STREAM_META[item.stream];
+                  const dateStr = new Date(item.timestamp).toLocaleTimeString('tr-TR', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  });
+                  return (
+                    <div key={`${item.timestamp}-${idx}`} className="profile-verif-row">
+                      <div
+                        className="profile-verif-icon"
+                        style={{ backgroundColor: meta.bgColor }}
+                      >
+                        <span
+                          className="profile-verif-dot"
+                          style={{ backgroundColor: meta.color }}
+                        />
+                      </div>
+                      <div className="profile-verif-info">
+                        <strong>{item.stationTitle}</strong>
+                        <small>
+                          {meta.label} · {dateStr}
+                        </small>
+                      </div>
+                      <span className="profile-verif-badge">+1 Yıldız</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <AppFooter />
         </section>
       )}
@@ -458,7 +547,11 @@ export const App: React.FC = () => {
         isOpen={isVerificationOpen}
         wallet={wallet}
         initialStation={verificationStation}
-        onClose={() => setIsVerificationOpen(false)}
+        initialStream={verificationStream}
+        onClose={() => {
+          setIsVerificationOpen(false);
+          setVerificationStream(null);
+        }}
         onSuccess={(updated) => {
           setWallet(updated);
           showToast('Doğrulanmış ayrıştırma tamamlandı! +1 Yıldız eklendi.', 3500);
