@@ -46,9 +46,9 @@ const SCENARIO_OPTIONS: Array<{
   id: DisposalVerificationScenario;
   label: string;
 }> = [
-  { id: 'normal', label: 'Normal' },
-  { id: 'wrong_bin', label: 'Yanlış Kutu' },
-  { id: 'take_back_fraud', label: 'Atıp Geri Alma' }
+  { id: 'normal', label: 'Geçerli' },
+  { id: 'wrong_bin', label: 'Yanlış Bölme' },
+  { id: 'take_back_fraud', label: 'Geri Çekme' }
 ];
 
 export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
@@ -191,8 +191,8 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
           <div className="verif-sim-info">
             <Icon name="spark" size={17} />
             <div>
-              <strong>Geliştirici & Test Modu</strong>
-              <small>Kampüs dışından testi simüle et</small>
+              <strong>Test Modu</strong>
+              <small>Kampüs dışı konum simülasyonu</small>
             </div>
           </div>
           <button
@@ -200,7 +200,7 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
             className={`verif-toggle-pill ${simulation ? 'active' : ''}`}
             onClick={() => handleToggleSimulation(!simulation)}
           >
-            {simulation ? 'Simülasyon Açık' : 'GPS Aktif'}
+            {simulation ? 'Test Modu: Açık' : 'Gerçek GPS'}
           </button>
         </div>
 
@@ -293,7 +293,7 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
           disabled={!eligibility.eligible}
           onClick={() => setStep('disposal')}
         >
-          <span>3 sn Hareket Kaydına Geç</span>
+          <span>Hareket Doğrulamasına Geç</span>
           <Icon name="arrow-right" size={17} />
         </button>
 
@@ -306,13 +306,13 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
               className="verif-secondary-btn verif-full-width"
               onClick={onResetTestQuota}
             >
-              Test Bekleme Süresini ve Kotayı Sıfırla
+              Test Kotasını Sıfırla
             </button>
           )}
 
         {!isAtStation && (
           <p className="verif-foot-note">
-            Test için yukarıdaki <strong>Geliştirici & Test Modu</strong> butonundan simülasyonu açabilirsiniz.
+            Kampüs dışındaysanız üstteki <strong>Test Modu</strong> seçeneğini açabilirsiniz.
           </p>
         )}
       </div>
@@ -324,10 +324,10 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
 
     return (
       <div className="verif-step-content">
-        <div className="verif-step-badge">2. AŞAMA · 3 SN HAREKET DOĞRULAMASI</div>
-        <h3 className="verif-sub-title">Bölmeni Seç, Basılı Tut ve Bırak</h3>
+        <div className="verif-step-badge">2. ADIM · HAREKET TEYİDİ</div>
+        <h3 className="verif-sub-title">Bölme Seçimi ve Kayıt</h3>
         <p className="verif-sub-desc">
-          Kayıt 360p sessiz alınır, atığın bırakıldığı teyit edilince anında onaylanır ve bellekten silinir.
+          Doğru bölmeyi seçin ve 2-3 sn kayıt alın. Görüntü sunucuda saklanmaz.
         </p>
 
         <div className="verif-streams-grid">
@@ -364,7 +364,7 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
 
         {simulation && (
           <div className="verif-scenario-box">
-            <span className="verif-sim-test-label">Sunum & Güvenlik Senaryosu:</span>
+            <span className="verif-sim-test-label">Denetim Senaryosu:</span>
             <div className="verif-scenario-pills">
               {SCENARIO_OPTIONS.map((opt) => (
                 <button
@@ -432,7 +432,7 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
             setStep('location');
           }}
         >
-          Konum Adımına Dön
+          Geri Dön
         </button>
       </div>
     );
@@ -444,8 +444,8 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
         <div className="verif-success-icon-wrap">
           <Icon name="shield-check" size={38} />
         </div>
-        <div className="eyebrow">HAREKET KANITI DOĞRULANDI</div>
-        <h2>Ayrıştırma Onaylandı!</h2>
+        <div className="eyebrow">DOĞRULAMA TAMAMLANDI</div>
+        <h2>Ayrıştırma Onaylandı</h2>
         <p>
           Atığınız <strong>{selectedStation.title}</strong> noktasında{' '}
           <strong>{WASTE_STREAM_META[selectedStream].bagLabel}</strong> bölmesine bırakılırken
@@ -483,7 +483,7 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
           className="verif-primary-btn"
           onClick={handleDismissModal}
         >
-          Haritaya Dön
+          Tamam
         </button>
       </div>
     );
@@ -494,8 +494,8 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
       <div className="verif-modal-sheet">
         <div className="verif-modal-header">
           <div className="verif-title-group">
-            <span className="verif-eyebrow">GÜVENLİ GERİ DÖNÜŞÜM DOĞRULAMA</span>
-            <h2 className="verif-modal-title">Doğrulanmış Atık Ayrıştırma</h2>
+            <span className="verif-eyebrow">SAÜ SIFIR ATIK DOĞRULAMA</span>
+            <h2 className="verif-modal-title">Atık Ayrıştırma Teyidi</h2>
           </div>
           <button
             type="button"

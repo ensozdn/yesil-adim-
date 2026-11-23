@@ -300,7 +300,7 @@ export const CampusWasteMap: React.FC<CampusWasteMapProps> = ({
           </button>
           <button
             type="button"
-            className="sau-map-ctrl-btn secondary"
+            className="sau-map-ctrl-btn sau-map-ctrl-btn-muted"
             onClick={handleResetCampusView}
             aria-label="Kampüs merkezine dön"
           >
@@ -377,26 +377,26 @@ export const CampusWasteMap: React.FC<CampusWasteMapProps> = ({
             onClick={() => onStartVerification?.(selectedStation)}
           >
             <Icon name="shield-check" size={18} />
-            <span>Kutunun Başındayım · Atık Doğrula</span>
+            <span>Atık Ayrıştırmayı Doğrula</span>
           </button>
 
           <div className="sau-sheet-actions">
             <button
               type="button"
-              className="sau-sheet-btn primary"
+              className="sau-sheet-btn sau-sheet-btn-soft"
               onClick={() => handleFocusStation(selectedStation)}
             >
-              <Icon name="locate" size={17} />
-              <span>Haritada Yaklaş</span>
+              <Icon name="locate" size={16} />
+              <span>Haritada Göster</span>
             </button>
             <a
-              className="sau-sheet-btn secondary"
+              className="sau-sheet-btn sau-sheet-btn-soft"
               href={`https://www.google.com/maps/dir/?api=1&destination=${selectedStation.lat},${selectedStation.lng}&travelmode=walking`}
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Icon name="arrow-right" size={17} />
-              <span>Yürüyüş Rotası</span>
+              <Icon name="arrow-right" size={16} />
+              <span>Yol Tarifi</span>
             </a>
           </div>
         </article>

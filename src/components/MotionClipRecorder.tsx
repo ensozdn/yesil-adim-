@@ -140,7 +140,7 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
 
       if (finalDurationMs < CLIP_MIN_DURATION_MS) {
         setStatusHint(
-          'Atığın bırakıldığını doğrulamak için en az 1.5 sn tutun veya Tek Elle 3 sn butonunu kullanın.'
+          'Doğrulama için en az 1.5 sn kayıt alın veya Otomatik 3 sn Kayıt seçeneğini kullanın.'
         );
         return;
       }
@@ -280,10 +280,10 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
   };
 
   const getPhaseLabel = (): string => {
-    if (!isRecording) return 'Hazır · Atığı kutu ağzında tutun';
-    if (elapsedMs < 950) return '1/3 · Atık kadrajda';
-    if (elapsedMs < 1900) return '2/3 · Kutuya bırakın';
-    return '3/3 · Elinizi çekin, bitiyor';
+    if (!isRecording) return 'Hazır · Kutu bölmesini kadraja alın';
+    if (elapsedMs < 950) return '1/3 · Başlangıç';
+    if (elapsedMs < 1900) return '2/3 · Bırakma Anı';
+    return '3/3 · Doğrulama';
   };
 
   const strokeOffset = RING_CIRCUMFERENCE * (1 - progress);
@@ -312,9 +312,9 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
               </>
             ) : simulationMode ? (
               <>
-                <strong>Simülasyon Vizörü Aktif</strong>
+                <strong>Test Vizörü Hazır</strong>
                 <small>
-                  Kamera izni olmadan 3 saniyelik Basılı Tut-Bırak kaydını test edebilirsiniz
+                  Kamera izni olmadan 3 saniyelik hareket doğrulamasını deneyebilirsiniz.
                 </small>
               </>
             ) : (
@@ -406,23 +406,23 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
             <strong>
               {isRecording
                 ? isAutoRecording
-                  ? 'Otomatik kaydediliyor...'
-                  : 'Bırakana kadar basılı tutun'
-                : 'Basılı Tut · Bırak (2-3 sn)'}
+                  ? 'Otomatik kayıt sürüyor...'
+                  : 'Kaydediliyor, atığı bırakın...'
+                : 'Basılı Tut ve Kaydet'}
             </strong>
-            <small>Kayıt bitince otomatik onaylanır, ekstra adım yok</small>
+            <small>2-3 sn kayıt sonunda otomatik doğrulanır.</small>
           </div>
         </div>
 
         <div className="clip-alt-actions">
           <button
             type="button"
-            className="clip-alt-btn primary"
+            className="clip-alt-btn clip-alt-btn-accent"
             disabled={!canUseShutter || isRecording || isVerifying || isExtractingFile}
             onClick={() => beginRecording(true)}
           >
             <Icon name="timer" size={14} />
-            <span>Tek Elle 3 sn Otomatik</span>
+            <span>Otomatik 3 sn Kayıt</span>
           </button>
 
           <button
@@ -432,7 +432,7 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
             onClick={() => fallbackInputRef.current?.click()}
           >
             <Icon name="video" size={14} />
-            <span>Cihaz Kamerası</span>
+            <span>Video Yükle</span>
           </button>
         </div>
 
