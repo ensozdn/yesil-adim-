@@ -23,7 +23,8 @@ export type IconName =
   | 'locate'
   | 'battery'
   | 'shield-check'
-  | 'navigation';
+  | 'navigation'
+  | 'video';
 
 export interface RewardTier {
   id: string;
@@ -75,12 +76,34 @@ export interface ChatMessage {
   timestamp: string;
 }
 
+export type DisposalProofMode =
+  | 'live_motion_clip'
+  | 'simulated_motion_clip'
+  | 'device_video_fallback';
+
+export type DisposalVerificationScenario =
+  | 'normal'
+  | 'wrong_bin'
+  | 'take_back_fraud';
+
+export interface DisposalMotionProof {
+  mode: DisposalProofMode;
+  frames: string[];
+  durationMs: number;
+  estimatedSizeKb: number;
+  motionScore: number;
+  resolutionLabel: string;
+  isSilent: boolean;
+}
+
 export interface VerificationRecord {
   stationId: string;
   stationTitle: string;
   stream: WasteStreamType;
   timestamp: number;
-  proofImageUrl?: string;
+  verificationMode?: DisposalProofMode;
+  durationMs?: number;
+  estimatedSizeKb?: number;
 }
 
 export interface StudentProfile {

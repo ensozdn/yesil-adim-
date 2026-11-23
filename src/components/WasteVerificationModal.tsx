@@ -1,6 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import type {
   CampusWasteStation,
+  DisposalMotionProof,
+  DisposalVerificationScenario,
   WalletState,
   WasteStreamType
 } from '../types';
@@ -17,7 +19,8 @@ import {
   recordDisposalVerification,
   setSimulationMode
 } from '../services/wasteVerificationService';
-import { verifyDisposalPhotoWithAi } from '../services/wasteAiService';
+import { verifyDisposalClipWithAi } from '../services/wasteAiService';
+import { MotionClipRecorder } from './MotionClipRecorder';
 import { Icon } from './Icon';
 
 interface WasteVerificationModalProps {
@@ -29,7 +32,23 @@ interface WasteVerificationModalProps {
   onSuccess: (updatedWallet: WalletState) => void;
 }
 
+interface VerifiedTelemetry {
+  durationMs: number;
+  frameCount: number;
+  estimatedSizeKb: number;
+  summaryText: string;
+}
+
 type ModalStep = 'location' | 'disposal' | 'success';
+
+const SCENARIO_OPTIONS: Array<{
+  id: DisposalVerificationScenario;
+  label: string;
+}> = [
+  { id: 'normal', label: 'Normal' },
+  { id: 'wrong_bin', label: 'Yanlış Kutu' },
+  { id: 'take_back_fraud', label: 'Atıp Geri Alma' }
+];
 
 export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
   isOpen,
@@ -50,12 +69,11 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
   const [selectedStream, setSelectedStream] = useState<WasteStreamType>(
     () => initialStream || 'packaging'
   );
-  const [proofImage, setProofImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [aiError, setAiError] = useState<string | null>(null);
-  const [simulateMismatch, setSimulateMismatch] = useState<boolean>(false);
-
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [testScenario, setTestScenario] = useState<DisposalVerificationScenario>('normal');
+  const [rejectedFrames, setRejectedFrames] = useState<string[]>([]);
+  const [verifiedTelemetry, setVerifiedTelemetry] = useState<VerifiedTelemetry | null>(null);
 
   const handleLocate = React.useCallback(() => {
     if (!navigator.geolocation) {
@@ -94,8 +112,10 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
 
   const handleDismissModal = () => {
     setStep('location');
-    setProofImage(null);
     setIsSubmitting(false);
+    setAiError(null);
+    setRejectedFrames([]);
+    setVerifiedTelemetry(null);
     onClose();
   };
 
@@ -119,36 +139,27 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
     ? findNearestStation(userCoords.lat, userCoords.lng)
     : null;
 
-  const handlePhotoCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      setProofImage(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleConfirmDisposal = async () => {
-    if (!proofImage && !simulation) {
-      setAiError('Lütfen atığı kutunun bölmesine bırakırken tek bir kare fotoğraf çekiniz.');
-      return;
-    }
-
+  const handleClipReady = async (proof: DisposalMotionProof) => {
     setIsSubmitting(true);
     setAiError(null);
+    setRejectedFrames([]);
 
-    const check = await verifyDisposalPhotoWithAi(
-      proofImage || 'simulated',
-      selectedStream,
-      wallet.apiKey,
-      simulateMismatch
-    );
+    const [check] = await Promise.all([
+      verifyDisposalClipWithAi(
+        proof,
+        selectedStream,
+        wallet.apiKey,
+        simulation ? testScenario : 'normal'
+      ),
+      new Promise<void>((resolve) => {
+        window.setTimeout(resolve, 480);
+      })
+    ]);
 
     if (!check.isMatch) {
       setIsSubmitting(false);
       setAiError(check.message);
+      setRejectedFrames(proof.frames.slice(0, 3));
       return;
     }
 
@@ -156,8 +167,16 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
       wallet,
       selectedStation,
       selectedStream,
-      proofImage || undefined
+      proof
     );
+
+    setVerifiedTelemetry({
+      durationMs: proof.durationMs,
+      frameCount: proof.frames.length,
+      estimatedSizeKb: proof.estimatedSizeKb,
+      summaryText: check.message
+    });
+    setRejectedFrames([]);
     setIsSubmitting(false);
     setStep('success');
     onSuccess(nextWallet);
@@ -213,7 +232,7 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
               </strong>
               <p>
                 {simulation
-                  ? 'Simülasyon devrede: Süleyman Demirel Kütüphanesi yanındasınız kabul edildi.'
+                  ? `Simülasyon devrede: ${selectedStation.title} yanındasınız kabul edildi.`
                   : isAtStation
                   ? `İstasyona mesafe: ${effectiveDistance}m (Maksimum sınır: ${GEOFENCE_RADIUS_METERS}m)`
                   : `Seçili noktaya mesafe: ${effectiveDistance}m. Ayrıştırma teyidi için kutunun yanına gitmelisiniz.`}
@@ -224,7 +243,9 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
           {!simulation && !isAtStation && nearestAutoCheck && (
             <div className="verif-nearest-hint">
               <span>Şu anki konumunuza en yakın:</span>
-              <strong>{nearestAutoCheck.station.title} ({nearestAutoCheck.distanceMeters}m)</strong>
+              <strong>
+                {nearestAutoCheck.station.title} ({nearestAutoCheck.distanceMeters}m)
+              </strong>
             </div>
           )}
 
@@ -270,7 +291,7 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
           disabled={!eligibility.eligible}
           onClick={() => setStep('disposal')}
         >
-          <span>Atık Teyidi Aşamasına Geç</span>
+          <span>3 sn Hareket Kaydına Geç</span>
           <Icon name="arrow-right" size={17} />
         </button>
 
@@ -284,12 +305,14 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
   };
 
   const renderDisposalStep = () => {
+    const activeStreamMeta = WASTE_STREAM_META[selectedStream];
+
     return (
       <div className="verif-step-content">
-        <div className="verif-step-badge">2. AŞAMA · KUTU BAŞINDA TEYİT</div>
-        <h3 className="verif-sub-title">Ayrıştırdığınız Atık Türü</h3>
+        <div className="verif-step-badge">2. AŞAMA · 3 SN HAREKET DOĞRULAMASI</div>
+        <h3 className="verif-sub-title">Bölmeni Seç, Basılı Tut ve Bırak</h3>
         <p className="verif-sub-desc">
-          SAÜ Sıfır Atık Yönetmeliği uyarınca kutudaki doğru bölmeyi seçiniz.
+          Kayıt 360p sessiz alınır, atığın bırakıldığı teyit edilince anında onaylanır ve bellekten silinir.
         </p>
 
         <div className="verif-streams-grid">
@@ -305,7 +328,11 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
                   borderColor: isSelected ? meta.color : undefined,
                   backgroundColor: isSelected ? meta.bgColor : undefined
                 }}
-                onClick={() => setSelectedStream(streamKey)}
+                onClick={() => {
+                  setSelectedStream(streamKey);
+                  setAiError(null);
+                  setRejectedFrames([]);
+                }}
               >
                 <span
                   className="verif-stream-dot"
@@ -320,94 +347,78 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
           })}
         </div>
 
-        <div className="verif-camera-box">
-          <label className="verif-label">Kutu Başında Atık Fotoğrafı (AI Görsel Eşleştirme)</label>
-
-          {simulation && (
-            <div className="verif-sim-test-bar">
-              <span className="verif-sim-test-label">Hoca & Güvenlik Testi:</span>
-              <button
-                type="button"
-                className={`verif-toggle-pill ${simulateMismatch ? 'active-alert' : ''}`}
-                onClick={() => {
-                  setSimulateMismatch(!simulateMismatch);
-                  setAiError(null);
-                }}
-              >
-                {simulateMismatch ? 'Yanlış Kutu Senaryosu Aktif' : 'Normal Eşleşme'}
-              </button>
+        {simulation && (
+          <div className="verif-scenario-box">
+            <span className="verif-sim-test-label">Sunum & Güvenlik Senaryosu:</span>
+            <div className="verif-scenario-pills">
+              {SCENARIO_OPTIONS.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  className={`verif-toggle-pill ${
+                    testScenario === opt.id
+                      ? opt.id === 'normal'
+                        ? 'active'
+                        : 'active-alert'
+                      : ''
+                  }`}
+                  onClick={() => {
+                    setTestScenario(opt.id);
+                    setAiError(null);
+                    setRejectedFrames([]);
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
-          )}
+          </div>
+        )}
 
-          {proofImage ? (
-            <div className="verif-preview-wrapper">
-              <img src={proofImage} alt="Kutu başında atık teyidi" className="verif-preview-img" />
-              <button
-                type="button"
-                className="verif-retake-btn"
-                onClick={() => {
-                  setProofImage(null);
-                  setAiError(null);
-                }}
-              >
-                <Icon name="close" size={14} />
-                <span>Fotoğrafı Değiştir</span>
-              </button>
+        <MotionClipRecorder
+          streamMeta={activeStreamMeta}
+          simulationMode={simulation}
+          isVerifying={isSubmitting}
+          onClipReady={(proof) => void handleClipReady(proof)}
+        />
+
+        {aiError && (
+          <div className="verif-ai-alert error" role="alert">
+            <div className="verif-ai-alert-icon">
+              <Icon name="close" size={16} />
             </div>
-          ) : (
-            <button
-              type="button"
-              className="verif-cam-trigger"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <div className="verif-cam-icon-circle">
-                <Icon name="camera" size={24} />
-              </div>
-              <strong>Kutunun Başında Fotoğraf Çek</strong>
-              <small>Atığı kutunun bölmesine bırakırken tek bir kare çekin</small>
-            </button>
-          )}
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            style={{ display: 'none' }}
-            onChange={handlePhotoCapture}
-          />
-
-          {aiError && (
-            <div className="verif-ai-alert error" role="alert">
-              <div className="verif-ai-alert-icon">
-                <Icon name="close" size={16} />
-              </div>
-              <div className="verif-ai-alert-text">
-                <strong>AI Görsel Doğrulama Reddi</strong>
-                <p>{aiError}</p>
-              </div>
+            <div className="verif-ai-alert-text">
+              <strong>AI Hareket Kilidi Reddi</strong>
+              <p>{aiError}</p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        <div className="verif-actions-row">
-          <button
-            type="button"
-            className="verif-secondary-btn"
-            onClick={() => setStep('location')}
-          >
-            Geri
-          </button>
-          <button
-            type="button"
-            className="verif-primary-btn"
-            disabled={isSubmitting}
-            onClick={handleConfirmDisposal}
-          >
-            <Icon name="shield-check" size={18} />
-            <span>{isSubmitting ? 'Doğrulanıyor...' : 'Ayrıştırmayı Onayla & Yıldız Kazan'}</span>
-          </button>
-        </div>
+        {rejectedFrames.length > 0 && (
+          <div className="clip-storyboard">
+            <span className="clip-storyboard-label">İncelenen 3 Kilit Kare (Reddedildi)</span>
+            <div className="clip-storyboard-grid">
+              {rejectedFrames.map((frameSrc, idx) => (
+                <div key={idx} className="clip-storyboard-item">
+                  <img src={frameSrc} alt={`Kare ${idx + 1}`} />
+                  <span>{idx === 0 ? '0.5 sn' : idx === 1 ? '1.5 sn' : '2.5 sn'}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <button
+          type="button"
+          className="verif-secondary-btn verif-full-width"
+          onClick={() => {
+            setAiError(null);
+            setRejectedFrames([]);
+            setStep('location');
+          }}
+        >
+          Konum Adımına Dön
+        </button>
       </div>
     );
   };
@@ -418,23 +429,38 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
         <div className="verif-success-icon-wrap">
           <Icon name="shield-check" size={38} />
         </div>
-        <div className="eyebrow">İŞLEM TAMAMLANDI</div>
-        <h2>Ayrıştırma Doğrulandı!</h2>
+        <div className="eyebrow">HAREKET KANITI DOĞRULANDI</div>
+        <h2>Ayrıştırma Onaylandı!</h2>
         <p>
-          Atığınız <strong>{selectedStation.title}</strong> noktasında doğru bölmeyle eşleştirildi. Kampüs çevresel katkınız sisteme kaydedildi.
+          Atığınız <strong>{selectedStation.title}</strong> noktasında{' '}
+          <strong>{WASTE_STREAM_META[selectedStream].bagLabel}</strong> bölmesine bırakılırken
+          doğrulandı.
         </p>
 
         <div className="verif-reward-pill">
           <Icon name="star" size={22} />
           <div>
             <strong>+1 Yeşil Yıldız Kazanıldı</strong>
-            <small>Güncel bakiye: {wallet.stars + 1} Yıldız</small>
+            <small>Güncel bakiye: {wallet.stars} Yıldız</small>
           </div>
         </div>
 
+        {verifiedTelemetry && (
+          <div className="clip-privacy-receipt">
+            <Icon name="video" size={16} />
+            <div className="clip-privacy-receipt-text">
+              <strong>
+                360p Sessiz · {(verifiedTelemetry.durationMs / 1000).toFixed(1)} sn ·{' '}
+                {verifiedTelemetry.frameCount} Kare · ~{verifiedTelemetry.estimatedSizeKb} KB
+              </strong>
+              <small>KVKK & Sıfır Depolama: Kayıt doğrulama sonrası bellekten silindi.</small>
+            </div>
+          </div>
+        )}
+
         <div className="verif-quota-info">
           <span>Bugünkü kalan doğrulama hakkınız:</span>
-          <strong>{Math.max(0, 2 - ((wallet.dailyVerificationsCount || 0) + 1))} / 2</strong>
+          <strong>{Math.max(0, 2 - (wallet.dailyVerificationsCount || 0))} / 2</strong>
         </div>
 
         <button

@@ -521,6 +521,9 @@ export const App: React.FC = () => {
                         <strong>{item.stationTitle}</strong>
                         <small>
                           {meta.label} · {dateStr}
+                          {item.durationMs
+                            ? ` · 360p ${(item.durationMs / 1000).toFixed(1)} sn`
+                            : ''}
                         </small>
                       </div>
                       <span className="profile-verif-badge">+1 Yıldız</span>
@@ -543,20 +546,22 @@ export const App: React.FC = () => {
         />
       )}
 
-      <WasteVerificationModal
-        isOpen={isVerificationOpen}
-        wallet={wallet}
-        initialStation={verificationStation}
-        initialStream={verificationStream}
-        onClose={() => {
-          setIsVerificationOpen(false);
-          setVerificationStream(null);
-        }}
-        onSuccess={(updated) => {
-          setWallet(updated);
-          showToast('Doğrulanmış ayrıştırma tamamlandı! +1 Yıldız eklendi.', 3500);
-        }}
-      />
+      {isVerificationOpen && (
+        <WasteVerificationModal
+          isOpen={isVerificationOpen}
+          wallet={wallet}
+          initialStation={verificationStation}
+          initialStream={verificationStream}
+          onClose={() => {
+            setIsVerificationOpen(false);
+            setVerificationStream(null);
+          }}
+          onSuccess={(updated) => {
+            setWallet(updated);
+            showToast('3 sn hareket kaydı doğrulandı! +1 Yıldız eklendi.', 3500);
+          }}
+        />
+      )}
 
       <BottomNavigation activeTab={activeTab} onSelectTab={setActiveTab} />
     </main>

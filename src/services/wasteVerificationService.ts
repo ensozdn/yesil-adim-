@@ -1,5 +1,6 @@
 import type {
   CampusWasteStation,
+  DisposalMotionProof,
   VerificationRecord,
   WalletState,
   WasteStreamType
@@ -142,7 +143,7 @@ export const recordDisposalVerification = (
   wallet: WalletState,
   station: CampusWasteStation,
   stream: WasteStreamType,
-  proofImageUrl?: string
+  motionProof?: DisposalMotionProof
 ): { nextWallet: WalletState; earnedStars: number } => {
   const today = getTodayDateKey();
   const currentDailyCount =
@@ -153,7 +154,9 @@ export const recordDisposalVerification = (
     stationTitle: station.title,
     stream,
     timestamp: Date.now(),
-    proofImageUrl
+    verificationMode: motionProof?.mode,
+    durationMs: motionProof?.durationMs,
+    estimatedSizeKb: motionProof?.estimatedSizeKb
   };
 
   const updatedRecords = [newRecord, ...(wallet.recentVerifications || [])].slice(0, 10);

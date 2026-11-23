@@ -161,6 +161,13 @@ export const Icon: React.FC<IconProps> = ({ name, className = 'ico', size = 22 }
         );
       case 'navigation':
         return <polygon points="3 11 22 2 13 21 11 13 3 11" />;
+      case 'video':
+        return (
+          <>
+            <rect x="2" y="6" width="14" height="12" rx="2.5" />
+            <path d="m16 10 6-3v10l-6-3v-4Z" />
+          </>
+        );
       case 'leaf':
       default:
         return (

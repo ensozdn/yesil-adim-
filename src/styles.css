@@ -2746,3 +2746,457 @@ div[data-testid*="netlify"],
   color: #8c2a20;
   margin: 0;
 }
+
+.verif-scenario-box {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  background: #f9fbfa;
+  border: 1px dashed #d3ddd6;
+  padding: 9px 11px;
+  border-radius: 14px;
+}
+
+.verif-scenario-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.verif-full-width {
+  width: 100%;
+}
+
+.clip-recorder {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.clip-viewport {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: 248px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #0d1a13;
+  border: 1.5px solid rgba(25, 42, 32, 0.14);
+  box-shadow: 0 8px 20px rgba(10, 24, 16, 0.16);
+}
+
+.clip-video-feed {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.clip-placeholder-feed {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 5px;
+  background: radial-gradient(circle at 50% 30%, #1c3a29 0%, #0d1a13 78%);
+  color: #eef7f1;
+}
+
+.clip-placeholder-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.clip-placeholder-feed strong {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.clip-placeholder-feed small {
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: rgba(235, 247, 239, 0.78);
+  max-width: 280px;
+}
+
+.clip-retry-cam-btn {
+  margin-top: 6px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.clip-hud-top {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.clip-hud-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(11, 22, 16, 0.72);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.clip-hud-pill.recording {
+  background: rgba(201, 56, 43, 0.9);
+}
+
+.clip-hud-pill.privacy {
+  color: #bfe8ce;
+}
+
+.clip-rec-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #48c774;
+  display: inline-block;
+}
+
+.clip-rec-dot.pulse {
+  background: #ffffff;
+  animation: clipRecBlink 0.7s ease-in-out infinite alternate;
+}
+
+@keyframes clipRecBlink {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.clip-hud-bottom {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  pointer-events: none;
+}
+
+.clip-target-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(11, 22, 16, 0.78);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.clip-target-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.clip-phase-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(11, 22, 16, 0.62);
+  padding: 3px 9px;
+  border-radius: 8px;
+}
+
+.clip-analyzing-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 24, 17, 0.84);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 18px;
+  gap: 6px;
+  color: #ffffff;
+}
+
+.clip-analyzing-overlay strong {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.clip-analyzing-overlay small {
+  font-size: 11px;
+  color: rgba(215, 238, 223, 0.85);
+}
+
+.clip-spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.22);
+  border-top-color: #6fb42c;
+  animation: clipSpin 0.8s linear infinite;
+  margin-bottom: 4px;
+}
+
+@keyframes clipSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.clip-controls-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.clip-shutter-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #f5f9f6;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 10px 14px;
+}
+
+.clip-shutter-btn {
+  position: relative;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.clip-shutter-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.clip-ring-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.clip-ring-track {
+  fill: none;
+  stroke: #d7e3db;
+  stroke-width: 4.5;
+}
+
+.clip-ring-progress {
+  fill: none;
+  stroke: #d63b2f;
+  stroke-width: 4.8;
+  stroke-linecap: round;
+}
+
+.clip-shutter-core {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 4px 12px rgba(35, 99, 63, 0.28);
+  transition: transform 0.16s ease, background 0.16s ease, border-radius 0.16s ease;
+}
+
+.clip-shutter-btn.recording .clip-shutter-core {
+  background: #d63b2f;
+  transform: scale(0.76);
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(214, 59, 47, 0.35);
+}
+
+.clip-shutter-caption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.clip-shutter-caption strong {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.clip-shutter-caption small {
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+.clip-alt-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.clip-alt-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 13px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.14s ease, background 0.14s ease;
+}
+
+.clip-alt-btn.primary {
+  background: #ebf5ee;
+  border-color: rgba(35, 99, 63, 0.24);
+  color: var(--primary-dark);
+}
+
+.clip-alt-btn:active {
+  transform: scale(0.97);
+}
+
+.clip-alt-btn:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+.clip-status-hint {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: #8a5600;
+  background: #fef8e7;
+  border: 1px solid #f4e1ad;
+  border-radius: 12px;
+  padding: 8px 11px;
+  margin: 0;
+}
+
+.clip-storyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.clip-storyboard-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.clip-storyboard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+}
+
+.clip-storyboard-item {
+  position: relative;
+  border-radius: 11px;
+  overflow: hidden;
+  border: 1.5px solid #f2c6c0;
+  background: #0d1a13;
+  aspect-ratio: 4 / 3;
+}
+
+.clip-storyboard-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.clip-storyboard-item span {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(11, 22, 16, 0.78);
+  color: #ffffff;
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+.clip-privacy-receipt {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #f0f8f3;
+  border: 1px solid rgba(35, 99, 63, 0.2);
+  color: var(--primary-dark);
+}
+
+.clip-privacy-receipt-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.clip-privacy-receipt-text strong {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--primary-dark);
+}
+
+.clip-privacy-receipt-text small {
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--ink-soft);
+}
