@@ -30,6 +30,7 @@ interface WasteVerificationModalProps {
   initialStream?: WasteStreamType | null;
   onClose: () => void;
   onSuccess: (updatedWallet: WalletState) => void;
+  onResetTestQuota?: () => void;
 }
 
 interface VerifiedTelemetry {
@@ -56,7 +57,8 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
   initialStation,
   initialStream,
   onClose,
-  onSuccess
+  onSuccess,
+  onResetTestQuota
 }) => {
   const [step, setStep] = useState<ModalStep>('location');
   const [simulation, setSimulation] = useState<boolean>(() => getSimulationMode());
@@ -294,6 +296,19 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
           <span>3 sn Hareket Kaydına Geç</span>
           <Icon name="arrow-right" size={17} />
         </button>
+
+        {simulation &&
+          !eligibility.eligible &&
+          (eligibility.reason === 'cooldown' || eligibility.reason === 'daily_limit') &&
+          onResetTestQuota && (
+            <button
+              type="button"
+              className="verif-secondary-btn verif-full-width"
+              onClick={onResetTestQuota}
+            >
+              Test Bekleme Süresini ve Kotayı Sıfırla
+            </button>
+          )}
 
         {!isAtStation && (
           <p className="verif-foot-note">

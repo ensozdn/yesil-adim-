@@ -1,13 +1,18 @@
 :root {
   --green: #23633f;
   --green2: #3d8655;
+  --primary: #23633f;
+  --primary-dark: #18492e;
   --lime: #d9eea5;
   --ink: #1c2a21;
+  --ink-soft: #36473d;
   --muted: #69756c;
   --bg: #f5f7f2;
   --line: #e2e8df;
+  --border: #e2e8df;
   --white: #ffffff;
   --red: #a34337;
+  --shadow-md: 0 8px 24px rgba(24, 48, 34, 0.08);
 }
 
 * {
@@ -23,7 +28,7 @@ body {
 
 button {
   font: inherit;
-  cursor: border;
+  cursor: pointer;
   border: 0;
 }
 
@@ -1552,6 +1557,12 @@ p {
 }
 
 .sau-map-ctrl-btn.secondary {
+  width: auto;
+  padding: 8px 11px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(25, 42, 32, 0.1);
+  box-shadow: 0 4px 12px rgba(20, 40, 28, 0.12);
   color: var(--ink-soft);
 }
 
@@ -1846,13 +1857,22 @@ p {
 }
 
 .sau-sheet-btn.primary {
-  background: var(--primary);
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #23633f;
   color: #ffffff;
+  box-shadow: 0 4px 12px rgba(35, 99, 63, 0.2);
 }
 
 .sau-sheet-btn.secondary {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
   background: #edf5f0;
-  color: var(--primary-dark);
+  border: 1px solid rgba(35, 99, 63, 0.14);
+  color: #18492e;
+  box-shadow: none;
 }
 
 #netlify-drawer,
@@ -3097,9 +3117,13 @@ div[data-testid*="netlify"],
 }
 
 .clip-alt-btn.primary {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 13px;
   background: #ebf5ee;
-  border-color: rgba(35, 99, 63, 0.24);
+  border: 1px solid rgba(35, 99, 63, 0.24);
   color: var(--primary-dark);
+  box-shadow: none;
 }
 
 .clip-alt-btn:active {

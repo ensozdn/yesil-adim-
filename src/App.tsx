@@ -560,6 +560,14 @@ export const App: React.FC = () => {
             setWallet(updated);
             showToast('3 sn hareket kaydı doğrulandı! +1 Yıldız eklendi.', 3500);
           }}
+          onResetTestQuota={() => {
+            setWallet((prev) => ({
+              ...prev,
+              dailyVerificationsCount: 0,
+              lastVerificationTimestamp: undefined
+            }));
+            showToast('Test kotası ve bekleme süresi sıfırlandı.', 2500);
+          }}
         />
       )}
 
