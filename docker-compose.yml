@@ -1,0 +1,9 @@
+services:
+  yesil-adim:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: yesil-adim-web
+    ports:
+      - "8080:80"
+    restart: unless-stopped
