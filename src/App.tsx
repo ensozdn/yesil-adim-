@@ -522,7 +522,7 @@ export const App: React.FC = () => {
                         <small>
                           {meta.label} · {dateStr}
                           {item.durationMs
-                            ? ` · 360p ${(item.durationMs / 1000).toFixed(1)} sn`
+                            ? ` · Hareket ${(item.durationMs / 1000).toFixed(1)} sn`
                             : ''}
                         </small>
                       </div>

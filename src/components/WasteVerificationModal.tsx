@@ -465,10 +465,10 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
             <Icon name="video" size={16} />
             <div className="clip-privacy-receipt-text">
               <strong>
-                360p Sessiz · {(verifiedTelemetry.durationMs / 1000).toFixed(1)} sn ·{' '}
+                Optimize Analiz · {(verifiedTelemetry.durationMs / 1000).toFixed(1)} sn ·{' '}
                 {verifiedTelemetry.frameCount} Kare · ~{verifiedTelemetry.estimatedSizeKb} KB
               </strong>
-              <small>KVKK & Sıfır Depolama: Kayıt doğrulama sonrası bellekten silindi.</small>
+              <small>Sıfır Depolama: Görüntü doğrulama sonrası bellekten silindi.</small>
             </div>
           </div>
         )}

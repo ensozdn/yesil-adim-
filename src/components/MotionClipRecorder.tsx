@@ -8,7 +8,7 @@ import {
   extractFramesFromVideoFile,
   generateSimulatedMotionProof,
   isLiveCameraSupported,
-  requestLowResSilentCamera,
+  requestNativeSilentCamera,
   stopCameraStream,
   type CapturedMotionFrame
 } from '../services/motionClipService';
@@ -70,7 +70,7 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
 
     setCameraStatus('initializing');
     try {
-      const stream = await requestLowResSilentCamera();
+      const stream = await requestNativeSilentCamera();
       mediaStreamRef.current = stream;
       setCameraStatus('ready');
       if (videoRef.current) {
@@ -92,7 +92,7 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
       }
 
       try {
-        const stream = await requestLowResSilentCamera();
+        const stream = await requestNativeSilentCamera();
         if (!active) {
           stopCameraStream(stream);
           return;
@@ -307,8 +307,8 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
             </div>
             {cameraStatus === 'initializing' ? (
               <>
-                <strong>Canlı 360p kamera açılıyor...</strong>
-                <small>Sessiz ve düşük veri modunda hazırlanıyor</small>
+                <strong>Kamera hazırlanıyor...</strong>
+                <small>Yüksek netlikte sessiz önizleme açılıyor</small>
               </>
             ) : simulationMode ? (
               <>
@@ -338,7 +338,7 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
             <i className={`clip-rec-dot ${isRecording ? 'pulse' : ''}`} />
             {isRecording
               ? `KAYIT · ${(elapsedMs / 1000).toFixed(1)} sn`
-              : '360p · SESSİZ'}
+              : 'HD · SESSİZ'}
           </span>
           <span className="clip-hud-pill privacy">
             <Icon name="shield-check" size={12} />
@@ -364,8 +364,8 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
             <div className="clip-spinner" />
             <strong>
               {isExtractingFile
-                ? '360p kareler çıkarılıyor...'
-                : '3 kare hareket kanıtı AI ile doğrulanıyor...'}
+                ? 'Kareler optimize ediliyor...'
+                : 'Hareket kanıtı doğrulanıyor...'}
             </strong>
             <small>Doğrulama bitince kayıt cihaz belleğinden anında silinir</small>
           </div>

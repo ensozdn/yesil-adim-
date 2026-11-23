@@ -292,6 +292,6 @@ export async function verifyDisposalClipWithAi(
   return {
     isMatch: true,
     motionVerified: true,
-    message: `360p sessiz hareket kaydı (${proof.frames.length} kare · ${proof.estimatedSizeKb} KB) doğrulandı: ${meta.label} (${meta.bagLabel}) teyit edildi.`
+    message: `Optimize hareket kaydı (${proof.frames.length} kare · ${proof.estimatedSizeKb} KB) doğrulandı: ${meta.label} (${meta.bagLabel}) teyit edildi.`
   };
 }
