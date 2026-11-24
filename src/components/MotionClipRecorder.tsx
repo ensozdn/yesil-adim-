@@ -75,7 +75,7 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
       setCameraStatus('ready');
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        await videoRef.current.play().catch(() => {});
+        await videoRef.current.play().catch(() => { });
       }
     } catch {
       setCameraStatus('unavailable');
@@ -101,7 +101,7 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
         setCameraStatus('ready');
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          await videoRef.current.play().catch(() => {});
+          await videoRef.current.play().catch(() => { });
         }
       } catch {
         if (active) setCameraStatus('unavailable');
@@ -123,7 +123,7 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
     if (cameraStatus === 'ready' && videoRef.current && mediaStreamRef.current) {
       if (videoRef.current.srcObject !== mediaStreamRef.current) {
         videoRef.current.srcObject = mediaStreamRef.current;
-        void videoRef.current.play().catch(() => {});
+        void videoRef.current.play().catch(() => { });
       }
     }
   }, [cameraStatus]);
@@ -246,7 +246,7 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
     if (isAutoModeRef.current) return;
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
-    } catch {}
+    } catch { }
     beginRecording(false);
   };
 
@@ -256,7 +256,7 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
       if (e.currentTarget.hasPointerCapture(e.pointerId)) {
         e.currentTarget.releasePointerCapture(e.pointerId);
       }
-    } catch {}
+    } catch { }
     if (!isRecordingRef.current || isAutoModeRef.current) return;
     const elapsed = performance.now() - startTimeRef.current;
     finalizeRecording(elapsed);
