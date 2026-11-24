@@ -16,7 +16,6 @@ import { Icon } from './Icon';
 interface FilterOption {
   id: WasteFilterType;
   label: string;
-  sublabel: string;
   dotColor: string;
 }
 
@@ -25,37 +24,19 @@ interface CampusWasteMapProps {
 }
 
 const FILTER_OPTIONS: FilterOption[] = [
-  {
-    id: 'all',
-    label: 'Tümü',
-    sublabel: '3+1 Sistem',
-    dotColor: '#23633f'
-  },
-  {
-    id: 'packaging',
-    label: 'Plastik · Cam · Metal',
-    sublabel: 'Sarı Poşet',
-    dotColor: '#6fb42c'
-  },
-  {
-    id: 'paper',
-    label: 'Kağıt Atıklar',
-    sublabel: 'Mavi Poşet',
-    dotColor: '#144d8c'
-  },
-  {
-    id: 'domestic',
-    label: 'Diğer Atıklar',
-    sublabel: 'Koyu Gri Poşet',
-    dotColor: '#58595b'
-  },
-  {
-    id: 'battery',
-    label: 'Atık Pil',
-    sublabel: 'Bina Girişleri',
-    dotColor: '#c9382b'
-  }
+  { id: 'all', label: 'Tümü', dotColor: '#23633f' },
+  { id: 'packaging', label: 'Sarı', dotColor: '#6fb42c' },
+  { id: 'paper', label: 'Mavi', dotColor: '#144d8c' },
+  { id: 'domestic', label: 'Gri', dotColor: '#58595b' },
+  { id: 'battery', label: 'Pil', dotColor: '#c9382b' }
 ];
+
+const COMPACT_STREAM_SHORT: Record<WasteStreamType, string> = {
+  packaging: 'Plastik · Cam · Metal',
+  paper: 'Kâğıt · Karton',
+  domestic: 'Evsel · Diğer',
+  battery: 'Atık Pil (Giriş)'
+};
 
 const getMarkerColor = (filter: WasteFilterType): string => {
   if (filter === 'all') return '#23633f';
@@ -64,7 +45,7 @@ const getMarkerColor = (filter: WasteFilterType): string => {
 
 const getMarkerSvgMarkup = (filter: WasteFilterType, isSelected: boolean): string => {
   const bg = getMarkerColor(filter);
-  const size = isSelected ? 42 : 34;
+  const size = isSelected ? 40 : 32;
   const ringClass = isSelected ? 'sau-map-pin selected' : 'sau-map-pin';
 
   let innerIcon =
@@ -79,7 +60,7 @@ const getMarkerSvgMarkup = (filter: WasteFilterType, isSelected: boolean): strin
 
   return `
     <div class="${ringClass}" style="width:${size}px;height:${size}px;background:${bg};">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         ${innerIcon}
       </svg>
       <span class="sau-pin-tri-dots">
@@ -148,7 +129,7 @@ export const CampusWasteMap: React.FC<CampusWasteMapProps> = ({
 
     filteredStations.forEach((station) => {
       const isSelected = selectedStation?.id === station.id;
-      const size = isSelected ? 42 : 34;
+      const size = isSelected ? 40 : 32;
 
       const icon = L.divIcon({
         className: 'sau-custom-div-icon',
@@ -168,14 +149,6 @@ export const CampusWasteMap: React.FC<CampusWasteMapProps> = ({
     });
   }, [activeFilter, selectedStation, filteredStations]);
 
-  const handleFocusStation = (station: CampusWasteStation) => {
-    setSelectedStation(station);
-    const map = mapInstanceRef.current;
-    if (map) {
-      map.flyTo([station.lat, station.lng], 17, { duration: 0.6 });
-    }
-  };
-
   const handleResetCampusView = () => {
     const map = mapInstanceRef.current;
     if (map) {
@@ -185,12 +158,12 @@ export const CampusWasteMap: React.FC<CampusWasteMapProps> = ({
 
   const handleLocateUser = () => {
     if (!navigator.geolocation) {
-      setLocationStatus('Tarayıcınız konum özelliğini desteklemiyor.');
-      setTimeout(() => setLocationStatus(null), 3200);
+      setLocationStatus('Konum özelliği desteklenmiyor.');
+      setTimeout(() => setLocationStatus(null), 2600);
       return;
     }
 
-    setLocationStatus('Konumunuz alınıyor...');
+    setLocationStatus('Konum alınıyor...');
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
@@ -210,52 +183,24 @@ export const CampusWasteMap: React.FC<CampusWasteMapProps> = ({
           }).addTo(map);
           map.flyTo([latitude, longitude], 17, { duration: 0.7 });
         }
-        setLocationStatus('Konumunuz haritada işaretlendi.');
-        setTimeout(() => setLocationStatus(null), 3000);
+        setLocationStatus('Konum işaretlendi.');
+        setTimeout(() => setLocationStatus(null), 2400);
       },
       () => {
-        setLocationStatus('Konum izni alınamadı. Kampüs merkezi gösteriliyor.');
+        setLocationStatus('Konum izni kapalı.');
         handleResetCampusView();
-        setTimeout(() => setLocationStatus(null), 3200);
+        setTimeout(() => setLocationStatus(null), 2600);
       },
       { enableHighAccuracy: true, timeout: 8000 }
     );
   };
 
-  const renderStreamBadge = (streamKey: WasteStreamType) => {
-    const meta = WASTE_STREAM_META[streamKey];
-    return (
-      <div
-        key={streamKey}
-        className="sau-stream-card"
-        style={{ backgroundColor: meta.bgColor }}
-      >
-        <div className="sau-stream-top">
-          <span
-            className="sau-stream-dot"
-            style={{ backgroundColor: meta.color }}
-          />
-          <span className="sau-stream-bag" style={{ color: meta.color }}>
-            {meta.bagLabel}
-          </span>
-        </div>
-        <strong className="sau-stream-name">{meta.label}</strong>
-        <span className="sau-stream-desc">{meta.description}</span>
-      </div>
-    );
-  };
-
   return (
     <div className="sau-map-page">
-      <div className="eyebrow">SAÜ SIFIR ATIK YÖNETMELİĞİ · ESENTEPE KAMPÜSÜ</div>
-      <h1>
-        Kampüs atık
-        <br />
-        haritası.
-      </h1>
-      <p>
-        Binalardaki 1.200 adet 3 bölmeli ayrıştırma kutusunu ve her bina girişindeki atık pil noktalarını harita üzerinde incele.
-      </p>
+      <div className="sau-compact-head">
+        <h2 className="sau-compact-title">Atık Haritası</h2>
+        <span className="sau-compact-meta">Esentepe · 1.200 Kutu</span>
+      </div>
 
       <div className="sau-filter-strip" role="tablist" aria-label="Atık türü filtresi">
         {FILTER_OPTIONS.map((item) => {
@@ -273,21 +218,13 @@ export const CampusWasteMap: React.FC<CampusWasteMapProps> = ({
                 className="sau-chip-dot"
                 style={{ backgroundColor: item.dotColor }}
               />
-              <span className="sau-chip-text">
-                <strong>{item.label}</strong>
-                <small>{item.sublabel}</small>
-              </span>
+              <span className="sau-chip-label">{item.label}</span>
             </button>
           );
         })}
       </div>
 
       <div className="sau-map-shell">
-        <div className="sau-map-floating-badge">
-          <Icon name="recycle" size={14} />
-          <span>1.200 Kutu · {filteredStations.length} Ana Nokta</span>
-        </div>
-
         <div className="sau-map-controls">
           <button
             type="button"
@@ -295,8 +232,8 @@ export const CampusWasteMap: React.FC<CampusWasteMapProps> = ({
             onClick={handleLocateUser}
             aria-label="Konumumu bul"
           >
-            <Icon name="locate" size={18} />
-            <span>Konumum</span>
+            <Icon name="locate" size={16} />
+            <span>Konum</span>
           </button>
           <button
             type="button"
@@ -304,8 +241,8 @@ export const CampusWasteMap: React.FC<CampusWasteMapProps> = ({
             onClick={handleResetCampusView}
             aria-label="Kampüs merkezine dön"
           >
-            <Icon name="map-pin" size={17} />
-            <span>Esentepe</span>
+            <Icon name="map-pin" size={15} />
+            <span>Kampüs</span>
           </button>
         </div>
 
@@ -318,76 +255,58 @@ export const CampusWasteMap: React.FC<CampusWasteMapProps> = ({
         <div
           ref={mapContainerRef}
           className="sau-leaflet-canvas"
-          aria-label="Sakarya Üniversitesi Esentepe Kampüsü Atık Kutuları Haritası"
+          aria-label="Sakarya Üniversitesi Esentepe Kampüsü Atık Haritası"
         />
       </div>
 
-      <div className="sau-station-pills" aria-label="Hızlı bina seçimi">
-        {filteredStations.map((station) => {
-          const isCurrent = selectedStation?.id === station.id;
-          return (
-            <button
-              key={station.id}
-              type="button"
-              className={`sau-station-pill ${isCurrent ? 'active' : ''}`}
-              onClick={() => handleFocusStation(station)}
-            >
-              <Icon name="map-pin" size={14} />
-              <span>{station.title}</span>
-            </button>
-          );
-        })}
-      </div>
-
       {selectedStation && (
-        <article className="sau-station-sheet" aria-label="Seçili atık noktası detayı">
-          <div className="sau-sheet-handle" aria-hidden="true" />
-
+        <article className="sau-station-sheet" aria-label="Seçili nokta">
           <div className="sau-sheet-head">
-            <div className="sau-sheet-badges">
-              <span className="sau-zone-pill">{selectedStation.zone}</span>
-              <span className="sau-unit-pill">
-                {selectedStation.unitCount} Ünite Aktif
-              </span>
+            <div className="sau-sheet-title-wrap">
+              <h3 className="sau-sheet-title">{selectedStation.title}</h3>
+              <span className="sau-unit-pill">{selectedStation.unitCount} ünite</span>
             </div>
             <button
               type="button"
               className="sau-sheet-close"
               onClick={() => setSelectedStation(null)}
-              aria-label="Detay kartını kapat"
+              aria-label="Kapat"
             >
-              <Icon name="close" size={16} />
+              <Icon name="close" size={15} />
             </button>
           </div>
 
-          <h2 className="sau-sheet-title">{selectedStation.title}</h2>
           <p className="sau-sheet-desc">{selectedStation.locationDetail}</p>
 
-          <div className="sau-streams-grid">
-            {selectedStation.streams.map((streamKey) => renderStreamBadge(streamKey))}
+          <div className="sau-streams-compact">
+            {selectedStation.streams.map((streamKey) => {
+              const meta = WASTE_STREAM_META[streamKey];
+              return (
+                <div
+                  key={streamKey}
+                  className="sau-stream-pill"
+                  style={{ backgroundColor: meta.bgColor }}
+                >
+                  <span
+                    className="sau-stream-dot"
+                    style={{ backgroundColor: meta.color }}
+                  />
+                  <span className="sau-stream-pill-text">
+                    {COMPACT_STREAM_SHORT[streamKey]}
+                  </span>
+                </div>
+              );
+            })}
           </div>
-
-          <p className="sau-sheet-warning">
-            Pil, elektronik atık, kartuş, atık yağ, tıbbi ve tehlikeli atıkların 3 bölmeli kutulara atılması yasaktır.
-          </p>
-
-          <button
-            type="button"
-            className="sau-sheet-verify-btn"
-            onClick={() => onStartVerification?.(selectedStation)}
-          >
-            <Icon name="shield-check" size={18} />
-            <span>Atık Ayrıştırmayı Doğrula</span>
-          </button>
 
           <div className="sau-sheet-actions">
             <button
               type="button"
-              className="sau-sheet-btn sau-sheet-btn-soft"
-              onClick={() => handleFocusStation(selectedStation)}
+              className="sau-sheet-btn sau-sheet-btn-solid"
+              onClick={() => onStartVerification?.(selectedStation)}
             >
-              <Icon name="locate" size={16} />
-              <span>Haritada Göster</span>
+              <Icon name="camera" size={16} />
+              <span>Doğrula</span>
             </button>
             <a
               className="sau-sheet-btn sau-sheet-btn-soft"

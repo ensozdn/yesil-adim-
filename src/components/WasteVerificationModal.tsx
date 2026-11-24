@@ -37,7 +37,6 @@ interface VerifiedTelemetry {
   durationMs: number;
   frameCount: number;
   estimatedSizeKb: number;
-  summaryText: string;
 }
 
 type ModalStep = 'location' | 'disposal' | 'success';
@@ -50,6 +49,13 @@ const SCENARIO_OPTIONS: Array<{
   { id: 'wrong_bin', label: 'Yanlış Bölme' },
   { id: 'take_back_fraud', label: 'Geri Çekme' }
 ];
+
+const SHORT_STREAM_NAMES: Record<WasteStreamType, string> = {
+  packaging: 'Sarı · Ambalaj',
+  paper: 'Mavi · Kâğıt',
+  domestic: 'Gri · Evsel',
+  battery: 'Pil Kutusu'
+};
 
 export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
   isOpen,
@@ -79,7 +85,7 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
 
   const handleLocate = React.useCallback(() => {
     if (!navigator.geolocation) {
-      setLocationError('Tarayıcınız konum servisini desteklemiyor.');
+      setLocationError('Konum desteklenmiyor.');
       return;
     }
 
@@ -96,7 +102,7 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
       },
       () => {
         setIsLocating(false);
-        setLocationError('Konum izni alınamadı. Simülasyon modunu açarak test edebilirsiniz.');
+        setLocationError('Konum izni kapalı.');
       },
       { enableHighAccuracy: true, timeout: 7000 }
     );
@@ -154,7 +160,7 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
         simulation ? testScenario : 'normal'
       ),
       new Promise<void>((resolve) => {
-        window.setTimeout(resolve, 480);
+        window.setTimeout(resolve, 450);
       })
     ]);
 
@@ -175,8 +181,7 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
     setVerifiedTelemetry({
       durationMs: proof.durationMs,
       frameCount: proof.frames.length,
-      estimatedSizeKb: proof.estimatedSizeKb,
-      summaryText: check.message
+      estimatedSizeKb: proof.estimatedSizeKb
     });
     setRejectedFrames([]);
     setIsSubmitting(false);
@@ -189,23 +194,20 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
       <div className="verif-step-content">
         <div className="verif-sim-banner">
           <div className="verif-sim-info">
-            <Icon name="spark" size={17} />
-            <div>
-              <strong>Test Modu</strong>
-              <small>Kampüs dışı konum simülasyonu</small>
-            </div>
+            <Icon name="spark" size={16} />
+            <strong>Test Modu</strong>
           </div>
           <button
             type="button"
             className={`verif-toggle-pill ${simulation ? 'active' : ''}`}
             onClick={() => handleToggleSimulation(!simulation)}
           >
-            {simulation ? 'Test Modu: Açık' : 'Gerçek GPS'}
+            {simulation ? 'Açık' : 'Gerçek GPS'}
           </button>
         </div>
 
         <div className="verif-station-selector">
-          <label className="verif-label">Bulunduğunuz Atık İstasyonu</label>
+          <label className="verif-label">Atık Noktası</label>
           <select
             className="verif-select"
             value={selectedStation.id}
@@ -216,35 +218,32 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
           >
             {CAMPUS_WASTE_STATIONS.map((station) => (
               <option key={station.id} value={station.id}>
-                {station.title} ({station.zone})
+                {station.title}
               </option>
             ))}
           </select>
-          <p className="verif-helper-text">{selectedStation.locationDetail}</p>
         </div>
 
         <div className={`verif-geofence-card ${isAtStation ? 'in-zone' : 'out-zone'}`}>
           <div className="verif-geofence-header">
-            <Icon name={isAtStation ? 'check' : 'map-pin'} size={20} />
+            <Icon name={isAtStation ? 'check' : 'map-pin'} size={18} />
             <div>
               <strong>
-                {isAtStation
-                  ? 'Konum Doğrulandı: Kutu Başındasınız'
-                  : 'Kutuya Yeterince Yakın Değilsiniz'}
+                {isAtStation ? 'Konum Uygun' : `Mesafe: ${effectiveDistance}m`}
               </strong>
               <p>
                 {simulation
-                  ? `Simülasyon devrede: ${selectedStation.title} yanındasınız kabul edildi.`
+                  ? `${selectedStation.title} (Test)`
                   : isAtStation
-                  ? `İstasyona mesafe: ${effectiveDistance}m (Maksimum sınır: ${GEOFENCE_RADIUS_METERS}m)`
-                  : `Seçili noktaya mesafe: ${effectiveDistance}m. Ayrıştırma teyidi için kutunun yanına gitmelisiniz.`}
+                  ? `${effectiveDistance}m uzaklıkta`
+                  : `Kutunun ${GEOFENCE_RADIUS_METERS}m yakınında olmalısınız.`}
               </p>
             </div>
           </div>
 
           {!simulation && !isAtStation && nearestAutoCheck && (
             <div className="verif-nearest-hint">
-              <span>Şu anki konumunuza en yakın:</span>
+              <span>En yakın:</span>
               <strong>
                 {nearestAutoCheck.station.title} ({nearestAutoCheck.distanceMeters}m)
               </strong>
@@ -258,8 +257,8 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
               onClick={handleLocate}
               disabled={isLocating}
             >
-              <Icon name="locate" size={15} />
-              <span>{isLocating ? 'Konum Alınıyor...' : 'Konumumu Yeniden Tara'}</span>
+              <Icon name="locate" size={14} />
+              <span>{isLocating ? 'Taranıyor...' : 'Konumu Yenile'}</span>
             </button>
           )}
 
@@ -268,21 +267,19 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
 
         <div className="verif-limits-strip">
           <div className="verif-limit-col">
-            <span className="verif-limit-label">Bugünkü Hak</span>
-            <strong className="verif-limit-val">
-              {eligibility.remainingDailyCount} / 2 Kalan
-            </strong>
+            <span className="verif-limit-label">Günlük Hak</span>
+            <strong className="verif-limit-val">{eligibility.remainingDailyCount} / 2</strong>
           </div>
           <div className="verif-limit-col">
-            <span className="verif-limit-label">Güvenlik Durumu</span>
+            <span className="verif-limit-label">Durum</span>
             <strong className="verif-limit-val">
               {eligibility.reason === 'daily_limit'
-                ? 'Günlük Kota Doldu'
+                ? 'Kota Doldu'
                 : eligibility.reason === 'cooldown'
                 ? `${eligibility.cooldownRemainingMinutes} dk bekleme`
                 : isAtStation
-                ? 'Doğrulamaya Hazır'
-                : 'Mesafe Kısıtlı'}
+                ? 'Hazır'
+                : 'Uzaktasınız'}
             </strong>
           </div>
         </div>
@@ -293,8 +290,8 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
           disabled={!eligibility.eligible}
           onClick={() => setStep('disposal')}
         >
-          <span>Hareket Doğrulamasına Geç</span>
-          <Icon name="arrow-right" size={17} />
+          <Icon name="camera" size={17} />
+          <span>Kamerayı Aç</span>
         </button>
 
         {simulation &&
@@ -309,12 +306,6 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
               Test Kotasını Sıfırla
             </button>
           )}
-
-        {!isAtStation && (
-          <p className="verif-foot-note">
-            Kampüs dışındaysanız üstteki <strong>Test Modu</strong> seçeneğini açabilirsiniz.
-          </p>
-        )}
       </div>
     );
   };
@@ -324,12 +315,6 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
 
     return (
       <div className="verif-step-content">
-        <div className="verif-step-badge">2. ADIM · HAREKET TEYİDİ</div>
-        <h3 className="verif-sub-title">Bölme Seçimi ve Kayıt</h3>
-        <p className="verif-sub-desc">
-          Doğru bölmeyi seçin ve 2-3 sn kayıt alın. Görüntü sunucuda saklanmaz.
-        </p>
-
         <div className="verif-streams-grid">
           {selectedStation.streams.map((streamKey) => {
             const meta = WASTE_STREAM_META[streamKey];
@@ -353,10 +338,9 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
                   className="verif-stream-dot"
                   style={{ backgroundColor: meta.color }}
                 />
-                <span className="verif-stream-texts">
-                  <strong>{meta.label}</strong>
-                  <small style={{ color: meta.color }}>{meta.bagLabel}</small>
-                </span>
+                <strong className="verif-stream-short">
+                  {SHORT_STREAM_NAMES[streamKey]}
+                </strong>
               </button>
             );
           })}
@@ -364,7 +348,7 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
 
         {simulation && (
           <div className="verif-scenario-box">
-            <span className="verif-sim-test-label">Denetim Senaryosu:</span>
+            <span className="verif-sim-test-label">Senaryo:</span>
             <div className="verif-scenario-pills">
               {SCENARIO_OPTIONS.map((opt) => (
                 <button
@@ -400,10 +384,10 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
         {aiError && (
           <div className="verif-ai-alert error" role="alert">
             <div className="verif-ai-alert-icon">
-              <Icon name="close" size={16} />
+              <Icon name="close" size={15} />
             </div>
             <div className="verif-ai-alert-text">
-              <strong>AI Hareket Kilidi Reddi</strong>
+              <strong>Doğrulama Reddedildi</strong>
               <p>{aiError}</p>
             </div>
           </div>
@@ -411,7 +395,6 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
 
         {rejectedFrames.length > 0 && (
           <div className="clip-storyboard">
-            <span className="clip-storyboard-label">İncelenen 3 Kilit Kare (Reddedildi)</span>
             <div className="clip-storyboard-grid">
               {rejectedFrames.map((frameSrc, idx) => (
                 <div key={idx} className="clip-storyboard-item">
@@ -442,41 +425,30 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
     return (
       <div className="verif-success-content">
         <div className="verif-success-icon-wrap">
-          <Icon name="shield-check" size={38} />
+          <Icon name="shield-check" size={34} />
         </div>
-        <div className="eyebrow">DOĞRULAMA TAMAMLANDI</div>
         <h2>Ayrıştırma Onaylandı</h2>
         <p>
-          Atığınız <strong>{selectedStation.title}</strong> noktasında{' '}
-          <strong>{WASTE_STREAM_META[selectedStream].bagLabel}</strong> bölmesine bırakılırken
-          doğrulandı.
+          {selectedStation.title} · {WASTE_STREAM_META[selectedStream].bagLabel}
         </p>
 
         <div className="verif-reward-pill">
-          <Icon name="star" size={22} />
+          <Icon name="star" size={20} />
           <div>
-            <strong>+1 Yeşil Yıldız Kazanıldı</strong>
-            <small>Güncel bakiye: {wallet.stars} Yıldız</small>
+            <strong>+1 Yeşil Yıldız</strong>
+            <small>Bakiye: {wallet.stars} Yıldız</small>
           </div>
         </div>
 
         {verifiedTelemetry && (
           <div className="clip-privacy-receipt">
-            <Icon name="video" size={16} />
-            <div className="clip-privacy-receipt-text">
-              <strong>
-                Optimize Analiz · {(verifiedTelemetry.durationMs / 1000).toFixed(1)} sn ·{' '}
-                {verifiedTelemetry.frameCount} Kare · ~{verifiedTelemetry.estimatedSizeKb} KB
-              </strong>
-              <small>Sıfır Depolama: Görüntü doğrulama sonrası bellekten silindi.</small>
-            </div>
+            <Icon name="shield-check" size={15} />
+            <span>
+              {(verifiedTelemetry.durationMs / 1000).toFixed(1)} sn · ~
+              {verifiedTelemetry.estimatedSizeKb} KB · Bellekten silindi
+            </span>
           </div>
         )}
-
-        <div className="verif-quota-info">
-          <span>Bugünkü kalan doğrulama hakkınız:</span>
-          <strong>{Math.max(0, 2 - (wallet.dailyVerificationsCount || 0))} / 2</strong>
-        </div>
 
         <button
           type="button"
@@ -493,17 +465,14 @@ export const WasteVerificationModal: React.FC<WasteVerificationModalProps> = ({
     <div className="verif-modal-overlay" role="dialog" aria-modal="true">
       <div className="verif-modal-sheet">
         <div className="verif-modal-header">
-          <div className="verif-title-group">
-            <span className="verif-eyebrow">SAÜ SIFIR ATIK DOĞRULAMA</span>
-            <h2 className="verif-modal-title">Atık Ayrıştırma Teyidi</h2>
-          </div>
+          <h2 className="verif-modal-title">Atık Doğrula</h2>
           <button
             type="button"
             className="verif-modal-close"
             onClick={handleDismissModal}
             aria-label="Kapat"
           >
-            <Icon name="close" size={17} />
+            <Icon name="close" size={16} />
           </button>
         </div>
 

@@ -5,11 +5,13 @@ import { Icon } from './Icon';
 interface BottomNavigationProps {
   activeTab: NavigationTab;
   onSelectTab: (tab: NavigationTab) => void;
+  onOpenVerify: () => void;
 }
 
 export const BottomNavigation: React.FC<BottomNavigationProps> = ({
   activeTab,
-  onSelectTab
+  onSelectTab,
+  onOpenVerify
 }) => {
   return (
     <nav className="doa-bottom-nav" aria-label="Ana gezinme çubuğu">
@@ -20,7 +22,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
           onClick={() => onSelectTab('home')}
         >
           <div className="doa-nav-icon-wrap">
-            <Icon name="home" size={22} />
+            <Icon name="home" size={21} />
           </div>
           <span>Ana Sayfa</span>
         </button>
@@ -31,9 +33,21 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
           onClick={() => onSelectTab('map')}
         >
           <div className="doa-nav-icon-wrap">
-            <Icon name="map-pin" size={22} />
+            <Icon name="map-pin" size={21} />
           </div>
-          <span>Atık Haritası</span>
+          <span>Harita</span>
+        </button>
+
+        <button
+          type="button"
+          className="doa-nav-camera-btn"
+          onClick={onOpenVerify}
+          aria-label="Atık ayrıştırmayı kamera ile doğrula"
+        >
+          <span className="doa-nav-camera-pill">
+            <Icon name="camera" size={20} />
+          </span>
+          <span>Doğrula</span>
         </button>
 
         <button
@@ -42,9 +56,9 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
           onClick={() => onSelectTab('assistant')}
         >
           <div className="doa-nav-icon-wrap">
-            <Icon name="chat" size={22} />
+            <Icon name="chat" size={21} />
           </div>
-          <span>Yeşil Asistan</span>
+          <span>Asistan</span>
         </button>
       </div>
     </nav>

@@ -22,7 +22,6 @@ import { WasteVerificationModal } from './components/WasteVerificationModal';
 import { analyzeWasteInput } from './services/wasteAiService';
 import { CAMPUS_OFFERS } from './services/campusOffersService';
 import { WASTE_STREAM_META } from './services/campusWasteLocationsService';
-import { checkVerificationEligibility } from './services/wasteVerificationService';
 import './styles.css';
 
 const STORAGE_KEY = 'green-step-wallet-v1';
@@ -86,8 +85,7 @@ export const App: React.FC = () => {
     {
       id: 'welcome-msg',
       sender: 'assistant',
-      text: 'Merhaba! Hangi atığı hangi kutuya atacağından emin değilsen fotoğrafını çekip gönderebilir veya doğrudan bana sorabilirsin. Örneğin: "Yağlı pizza kutusunu nereye atmalıyım?"',
-      recommendedBin: 'Yeşil Asistan Hazır',
+      text: 'Atığın fotoğrafını gönder veya adını yaz, hangi kutuya atacağını hemen söyleyeyim.',
       timestamp: 'Şimdi'
     }
   ]);
@@ -229,40 +227,6 @@ export const App: React.FC = () => {
             onOpenRewards={handleOpenFirstOffer}
           />
 
-          {(() => {
-            const homeEligibility = checkVerificationEligibility(wallet, true);
-            return (
-              <div
-                className="home-verification-trigger"
-                onClick={() => {
-                  setVerificationStation(null);
-                  setVerificationStream(null);
-                  setIsVerificationOpen(true);
-                }}
-                role="button"
-                tabIndex={0}
-              >
-                <div className="home-verif-icon-circle">
-                  <Icon name="shield-check" size={22} />
-                </div>
-                <div className="home-verif-content">
-                  <div className="home-verif-top-row">
-                    <strong>Kutu Başında Doğrulanmış Ayrıştırma</strong>
-                    <span className="home-verif-badge">
-                      {homeEligibility.remainingDailyCount} / 2 Günlük Hak
-                    </span>
-                  </div>
-                  <small>
-                    {homeEligibility.reason === 'cooldown'
-                      ? `${homeEligibility.cooldownRemainingMinutes} dk bekleme süresinde · Kutu başında teyit et`
-                      : 'Kampüs atık kutusunun yanındayken teyit et, +1 Yeşil Yıldız kazan.'}
-                  </small>
-                </div>
-                <Icon name="arrow-right" size={18} className="home-verif-arrow" />
-              </div>
-            );
-          })()}
-
           <GainsOverviewCard stars={wallet.stars} targetStars={WEEKLY_REWARD_TARGET} />
 
           <FeaturedOffersCarousel
@@ -289,15 +253,10 @@ export const App: React.FC = () => {
 
       {activeTab === 'assistant' && (
         <section className="view active">
-          <div className="eyebrow">YEŞİL ASİSTAN · AKILLI AYRIŞTIRMA</div>
-          <h1>
-            Hangi kutuya
-            <br />
-            atmalıyım?
-          </h1>
-          <p>
-            Atığın fotoğrafını çek veya adını yaz; Yeşil Asistan hangi geri dönüşüm kutusuna atman gerektiğini anında söylesin.
-          </p>
+          <div className="sau-compact-head">
+            <h2 className="sau-compact-title">Yeşil Asistan</h2>
+            <span className="sau-compact-meta">AI Rehber</span>
+          </div>
 
           <div className="chat-container">
             {messages.map((msg) => (
@@ -325,15 +284,15 @@ export const App: React.FC = () => {
                       setIsVerificationOpen(true);
                     }}
                   >
-                    <Icon name="shield-check" size={15} />
-                    <span>Kutuda Doğrula & Puan Kazan</span>
+                    <Icon name="camera" size={14} />
+                    <span>Kutuda Doğrula</span>
                   </button>
                 )}
               </div>
             ))}
             {isAnalyzing && (
               <div className="chat-bubble assistant">
-                <p className="chat-text">Atık türü ve kampüs kutu uygunluğu inceleniyor...</p>
+                <p className="chat-text">İnceleniyor...</p>
               </div>
             )}
           </div>
@@ -341,7 +300,7 @@ export const App: React.FC = () => {
           {selectedImage && (
             <div className="image-preview-bar">
               <img src={selectedImage} alt="Önizleme" />
-              <span>Fotoğraf analize hazır</span>
+              <span>Fotoğraf hazır</span>
               <button
                 type="button"
                 className="remove-img-btn"
@@ -352,27 +311,6 @@ export const App: React.FC = () => {
               </button>
             </div>
           )}
-
-          <div className="chat-verify-banner">
-            <div className="chat-verify-texts">
-              <div className="chat-verify-title">
-                <Icon name="shield-check" size={16} />
-                <strong>Atığı Kutuya Bırakırken Doğrula</strong>
-              </div>
-              <small>Yalnızca kutu başında teyit edilen ayrıştırmalar Yeşil Yıldız kazandırır.</small>
-            </div>
-            <button
-              type="button"
-              className="chat-verify-pill-btn"
-              onClick={() => {
-                setVerificationStation(null);
-                setIsVerificationOpen(true);
-              }}
-            >
-              <span>Teyit Et</span>
-              <Icon name="arrow-right" size={13} />
-            </button>
-          </div>
 
           <div className="chat-input-row">
             <input
@@ -571,7 +509,15 @@ export const App: React.FC = () => {
         />
       )}
 
-      <BottomNavigation activeTab={activeTab} onSelectTab={setActiveTab} />
+      <BottomNavigation
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+        onOpenVerify={() => {
+          setVerificationStation(null);
+          setVerificationStream(null);
+          setIsVerificationOpen(true);
+        }}
+      />
     </main>
   );
 };

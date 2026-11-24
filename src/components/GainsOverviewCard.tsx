@@ -16,12 +16,12 @@ export const GainsOverviewCard: React.FC<GainsOverviewCardProps> = ({
   return (
     <div className="doa-gains-section">
       <div className="doa-section-header">
-        <strong className="doa-section-title">ÇEVRESEL KAZANIMLARIM</strong>
+        <strong className="doa-section-title">HAFTALIK HEDEF</strong>
       </div>
 
       <div className="doa-gains-card">
         <div className="doa-gauge-box">
-          <svg width="104" height="104" viewBox="0 0 108 108" className="doa-gauge-svg">
+          <svg width="88" height="88" viewBox="0 0 108 108" className="doa-gauge-svg">
             <circle
               cx="54"
               cy="54"
@@ -45,19 +45,18 @@ export const GainsOverviewCard: React.FC<GainsOverviewCardProps> = ({
             />
           </svg>
           <div className="doa-gauge-inner">
-            <span className="doa-gauge-caption">HAFTALIK HEDEF</span>
             <strong className="doa-gauge-num">{stars} / {targetStars}</strong>
           </div>
         </div>
 
         <div className="doa-gains-summary">
           <strong className="doa-gains-summary-title">
-            {remainingStars > 0 ? `${remainingStars} yıldız kaldı` : 'Hedefe ulaştın'}
+            {remainingStars > 0 ? `${remainingStars} yıldız kaldı` : 'Hedef tamamlandı'}
           </strong>
           <span className="doa-gains-summary-text">
             {remainingStars > 0
-              ? 'Haftalık hedefini tamamladığında yeni kampüs fırsatlarını açabilirsin.'
-              : 'Tebrikler, haftalık yıldız hedefini tamamladın.'}
+              ? 'Doğrulanan her atık +1 yıldız ekler.'
+              : 'Tüm kampüs fırsatlarını açabilirsin.'}
           </span>
         </div>
       </div>

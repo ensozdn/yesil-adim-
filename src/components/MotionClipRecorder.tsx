@@ -402,15 +402,15 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
             </svg>
             <span className="clip-shutter-core" />
           </button>
-          <div className="clip-shutter-caption">
+            <div className="clip-shutter-caption">
             <strong>
               {isRecording
                 ? isAutoRecording
-                  ? 'Otomatik kayıt sürüyor...'
-                  : 'Kaydediliyor, atığı bırakın...'
+                  ? 'Kaydediliyor...'
+                  : 'Atığı bırakın...'
                 : 'Basılı Tut ve Kaydet'}
             </strong>
-            <small>2-3 sn kayıt sonunda otomatik doğrulanır.</small>
+            <small>2-3 sn · Otomatik onaylanır</small>
           </div>
         </div>
 

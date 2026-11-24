@@ -28,8 +28,7 @@ export const HeroWalletCard: React.FC<HeroWalletCardProps> = ({
 
       <div className="doa-hero-content">
         <div className="doa-hero-eyebrow">
-          <span className="doa-hero-brand-tag">YEŞİL ADIM</span>
-          <span className="doa-hero-subtitle">Güncel Yıldız Bakiyesi</span>
+          <span className="doa-hero-subtitle">Yıldız Bakiyesi</span>
         </div>
 
         <div className="doa-hero-balance-row">

@@ -1039,9 +1039,9 @@ p {
   border: 1px solid rgba(0, 0, 0, 0.06);
   box-shadow: 0 6px 30px rgba(28, 42, 33, 0.12);
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   align-items: center;
-  padding: 6px 6px 8px 6px;
+  padding: 6px 6px 7px 6px;
   position: relative;
 }
 
@@ -1443,50 +1443,35 @@ p {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 13px;
-  border-radius: 16px;
+  gap: 7px;
+  padding: 8px 13px;
+  border-radius: 999px;
   background: #ffffff;
   border: 1.5px solid var(--border);
   cursor: pointer;
-  text-align: left;
-  transition: transform 0.16s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  transition: transform 0.15s ease, border-color 0.18s ease, background 0.18s ease;
 }
 
 .sau-filter-chip:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
 .sau-filter-chip.active {
-  background: #f0f9f3;
+  background: #ebf5ee;
   border-color: var(--primary);
-  box-shadow: 0 4px 12px rgba(35, 99, 63, 0.12);
 }
 
 .sau-chip-dot {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.sau-chip-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.15;
-}
-
-.sau-chip-text strong {
-  font-size: 13px;
+.sau-chip-label {
+  font-size: 12.5px;
   font-weight: 700;
   color: var(--ink);
-}
-
-.sau-chip-text small {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--muted);
-  margin-top: 2px;
 }
 
 .sau-map-shell {
@@ -1501,7 +1486,7 @@ p {
 
 .sau-leaflet-canvas {
   width: 100%;
-  height: 330px;
+  height: 350px;
   z-index: 1;
 }
 
@@ -3203,4 +3188,120 @@ div[data-testid*="netlify"],
   font-size: 11px;
   line-height: 1.35;
   color: var(--ink-soft);
+}
+
+.doa-nav-camera-btn {
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 0;
+  color: var(--primary);
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.doa-nav-camera-pill {
+  width: 44px;
+  height: 34px;
+  border-radius: 17px;
+  background: #23633f;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(35, 99, 63, 0.28);
+  transition: transform 0.15s ease;
+}
+
+.doa-nav-camera-btn:active .doa-nav-camera-pill {
+  transform: scale(0.93);
+}
+
+.sau-compact-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.sau-compact-title {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+}
+
+.sau-compact-meta {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--primary);
+  background: #ebf5ee;
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.sau-sheet-title-wrap {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  min-width: 0;
+}
+
+.sau-streams-compact {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.sau-stream-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 10px;
+  border-radius: 12px;
+}
+
+.sau-stream-pill-text {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sau-sheet-btn-solid {
+  background: #23633f;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(35, 99, 63, 0.22);
+}
+
+.verif-stream-short {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.verif-scenario-box {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.clip-privacy-receipt {
+  align-items: center;
+  justify-content: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 9px 12px;
 }
