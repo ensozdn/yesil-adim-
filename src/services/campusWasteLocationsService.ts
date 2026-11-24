@@ -6,6 +6,28 @@ import type {
 
 export const SAU_CAMPUS_CENTER: [number, number] = [40.7422, 30.3316];
 
+export const SAU_CAMPUS_BOUNDS: [[number, number], [number, number]] = [
+  [40.7355, 30.3205],
+  [40.7495, 30.3425]
+];
+
+export const isWithinCampusBounds = (lat: number, lng: number): boolean => {
+  return (
+    lat >= SAU_CAMPUS_BOUNDS[0][0] &&
+    lat <= SAU_CAMPUS_BOUNDS[1][0] &&
+    lng >= SAU_CAMPUS_BOUNDS[0][1] &&
+    lng <= SAU_CAMPUS_BOUNDS[1][1]
+  );
+};
+
+export const formatWalkingEstimate = (distanceMeters: number): string => {
+  if (distanceMeters >= 2000) {
+    return `${(distanceMeters / 1000).toFixed(1)} km`;
+  }
+  const minutes = Math.max(1, Math.round(distanceMeters / 78));
+  return `${minutes} dk · ${distanceMeters}m`;
+};
+
 export const WASTE_STREAM_META: Record<WasteStreamType, WasteStreamMeta> = {
   packaging: {
     id: 'packaging',

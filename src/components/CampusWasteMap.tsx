@@ -8,9 +8,16 @@ import type {
 } from '../types';
 import {
   CAMPUS_WASTE_STATIONS,
+  formatWalkingEstimate,
+  isWithinCampusBounds,
+  SAU_CAMPUS_BOUNDS,
   SAU_CAMPUS_CENTER,
   WASTE_STREAM_META
 } from '../services/campusWasteLocationsService';
+import {
+  calculateDistanceMeters,
+  findNearestStation
+} from '../services/wasteVerificationService';
 import { Icon } from './Icon';
 
 interface FilterOption {
@@ -84,6 +91,7 @@ export const CampusWasteMap: React.FC<CampusWasteMapProps> = ({
   const [selectedStation, setSelectedStation] = useState<CampusWasteStation | null>(
     CAMPUS_WASTE_STATIONS[0]
   );
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [locationStatus, setLocationStatus] = useState<string | null>(null);
 
   const filteredStations = CAMPUS_WASTE_STATIONS.filter((station) =>
@@ -96,14 +104,21 @@ export const CampusWasteMap: React.FC<CampusWasteMapProps> = ({
     const map = L.map(mapContainerRef.current, {
       center: SAU_CAMPUS_CENTER,
       zoom: 16,
-      minZoom: 14,
+      minZoom: 15,
       maxZoom: 19,
+      maxBounds: SAU_CAMPUS_BOUNDS,
+      maxBoundsViscosity: 0.9,
       zoomControl: false
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap'
-    }).addTo(map);
+    L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      {
+        subdomains: 'abcd',
+        maxZoom: 20,
+        attribution: '&copy; OpenStreetMap &copy; CARTO'
+      }
+    ).addTo(map);
 
     const markersGroup = L.layerGroup().addTo(map);
     mapInstanceRef.current = map;
@@ -142,7 +157,7 @@ export const CampusWasteMap: React.FC<CampusWasteMapProps> = ({
       marker.on('click', () => {
         setSelectedStation(station);
         map.flyTo([station.lat, station.lng], Math.max(map.getZoom(), 17), {
-          duration: 0.55
+          duration: 0.5
         });
       });
       marker.addTo(layer);
@@ -152,14 +167,14 @@ export const CampusWasteMap: React.FC<CampusWasteMapProps> = ({
   const handleResetCampusView = () => {
     const map = mapInstanceRef.current;
     if (map) {
-      map.flyTo(SAU_CAMPUS_CENTER, 16, { duration: 0.6 });
+      map.flyTo(SAU_CAMPUS_CENTER, 16, { duration: 0.55 });
     }
   };
 
   const handleLocateUser = () => {
     if (!navigator.geolocation) {
-      setLocationStatus('Konum özelliği desteklenmiyor.');
-      setTimeout(() => setLocationStatus(null), 2600);
+      setLocationStatus('Konum desteklenmiyor.');
+      setTimeout(() => setLocationStatus(null), 2400);
       return;
     }
 
@@ -167,33 +182,54 @@ export const CampusWasteMap: React.FC<CampusWasteMapProps> = ({
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
+        setUserCoords({ lat: latitude, lng: longitude });
+        const nearest = findNearestStation(latitude, longitude);
+        setSelectedStation(nearest.station);
+
         const map = mapInstanceRef.current;
         if (map) {
-          if (userMarkerRef.current) {
-            userMarkerRef.current.remove();
+          if (isWithinCampusBounds(latitude, longitude)) {
+            if (userMarkerRef.current) {
+              userMarkerRef.current.remove();
+            }
+            const userIcon = L.divIcon({
+              className: 'sau-user-loc-icon',
+              html: '<div class="sau-user-dot"><span class="sau-user-pulse"></span></div>',
+              iconSize: [22, 22],
+              iconAnchor: [11, 11]
+            });
+            userMarkerRef.current = L.marker([latitude, longitude], {
+              icon: userIcon
+            }).addTo(map);
+            map.flyTo([latitude, longitude], 17, { duration: 0.65 });
+            setLocationStatus(`En yakın: ${nearest.station.title}`);
+          } else {
+            map.flyTo([nearest.station.lat, nearest.station.lng], 16, { duration: 0.65 });
+            setLocationStatus('Kampüs dışındasınız · Esentepe gösteriliyor');
           }
-          const userIcon = L.divIcon({
-            className: 'sau-user-loc-icon',
-            html: '<div class="sau-user-dot"><span class="sau-user-pulse"></span></div>',
-            iconSize: [22, 22],
-            iconAnchor: [11, 11]
-          });
-          userMarkerRef.current = L.marker([latitude, longitude], {
-            icon: userIcon
-          }).addTo(map);
-          map.flyTo([latitude, longitude], 17, { duration: 0.7 });
         }
-        setLocationStatus('Konum işaretlendi.');
-        setTimeout(() => setLocationStatus(null), 2400);
+        setTimeout(() => setLocationStatus(null), 2800);
       },
       () => {
         setLocationStatus('Konum izni kapalı.');
         handleResetCampusView();
-        setTimeout(() => setLocationStatus(null), 2600);
+        setTimeout(() => setLocationStatus(null), 2400);
       },
       { enableHighAccuracy: true, timeout: 8000 }
     );
   };
+
+  const selectedDistanceLabel =
+    selectedStation && userCoords
+      ? formatWalkingEstimate(
+          calculateDistanceMeters(
+            userCoords.lat,
+            userCoords.lng,
+            selectedStation.lat,
+            selectedStation.lng
+          )
+        )
+      : null;
 
   return (
     <div className="sau-map-page">
@@ -265,6 +301,9 @@ export const CampusWasteMap: React.FC<CampusWasteMapProps> = ({
             <div className="sau-sheet-title-wrap">
               <h3 className="sau-sheet-title">{selectedStation.title}</h3>
               <span className="sau-unit-pill">{selectedStation.unitCount} ünite</span>
+              {selectedDistanceLabel && (
+                <span className="sau-distance-pill">{selectedDistanceLabel}</span>
+              )}
             </div>
             <button
               type="button"

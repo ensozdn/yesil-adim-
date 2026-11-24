@@ -12,12 +12,14 @@ import {
   stopCameraStream,
   type CapturedMotionFrame
 } from '../services/motionClipService';
+import { triggerHaptic } from '../utils/haptics';
 import { Icon } from './Icon';
 
 interface MotionClipRecorderProps {
   streamMeta: WasteStreamMeta;
   simulationMode: boolean;
   isVerifying: boolean;
+  disabledReason?: string | null;
   onClipReady: (proof: DisposalMotionProof) => void;
 }
 
@@ -31,6 +33,7 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
   streamMeta,
   simulationMode,
   isVerifying,
+  disabledReason,
   onClipReady
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -186,12 +189,13 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
 
   const beginRecording = useCallback(
     (autoMode: boolean) => {
-      if (isVerifying || isExtractingFile || isRecordingRef.current) return;
+      if (disabledReason || isVerifying || isExtractingFile || isRecordingRef.current) return;
       if (cameraStatus !== 'ready' && !simulationMode) {
-        setStatusHint('Canlı kamera kullanılamıyor. Alttan cihaz kamerasıyla kayıt alabilirsiniz.');
+        setStatusHint('Canlı kamera kullanılamıyor. Alttan video yükleyebilirsiniz.');
         return;
       }
 
+      triggerHaptic('light');
       setStatusHint(null);
       isRecordingRef.current = true;
       isAutoModeRef.current = autoMode;
@@ -238,7 +242,7 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
 
       rafRef.current = window.requestAnimationFrame(tick);
     },
-    [cameraStatus, finalizeRecording, isExtractingFile, isVerifying, simulationMode]
+    [cameraStatus, disabledReason, finalizeRecording, isExtractingFile, isVerifying, simulationMode]
   );
 
   const handleHoldStart = (e: React.PointerEvent<HTMLButtonElement>) => {
@@ -287,7 +291,7 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
   };
 
   const strokeOffset = RING_CIRCUMFERENCE * (1 - progress);
-  const canUseShutter = cameraStatus === 'ready' || simulationMode;
+  const canUseShutter = !disabledReason && (cameraStatus === 'ready' || simulationMode);
 
   return (
     <div className="clip-recorder">
@@ -428,7 +432,7 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
           <button
             type="button"
             className="clip-alt-btn"
-            disabled={isRecording || isVerifying || isExtractingFile}
+            disabled={Boolean(disabledReason) || isRecording || isVerifying || isExtractingFile}
             onClick={() => fallbackInputRef.current?.click()}
           >
             <Icon name="video" size={14} />
@@ -446,7 +450,8 @@ export const MotionClipRecorder: React.FC<MotionClipRecorderProps> = ({
         />
       </div>
 
-      {statusHint && <p className="clip-status-hint">{statusHint}</p>}
+      {disabledReason && <p className="clip-lock-hint">{disabledReason}</p>}
+      {!disabledReason && statusHint && <p className="clip-status-hint">{statusHint}</p>}
     </div>
   );
 };
