@@ -30,6 +30,8 @@ interface CampusWasteMapProps {
   onStartVerification?: (station: CampusWasteStation) => void;
 }
 
+type MapStyleMode = 'street' | 'satellite';
+
 const FILTER_OPTIONS: FilterOption[] = [
   { id: 'all', label: 'Tümü', dotColor: '#23633f' },
   { id: 'packaging', label: 'Sarı', dotColor: '#6fb42c' },
@@ -44,6 +46,10 @@ const COMPACT_STREAM_SHORT: Record<WasteStreamType, string> = {
   domestic: 'Evsel · Diğer',
   battery: 'Atık Pil (Giriş)'
 };
+
+const STREET_TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+const SATELLITE_TILE_URL =
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 
 const getMarkerColor = (filter: WasteFilterType): string => {
   if (filter === 'all') return '#23633f';
@@ -84,9 +90,11 @@ export const CampusWasteMap: React.FC<CampusWasteMapProps> = ({
 }) => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const tileLayerRef = useRef<L.TileLayer | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
 
+  const [mapStyle, setMapStyle] = useState<MapStyleMode>('street');
   const [activeFilter, setActiveFilter] = useState<WasteFilterType>('all');
   const [selectedStation, setSelectedStation] = useState<CampusWasteStation | null>(
     CAMPUS_WASTE_STATIONS[0]
@@ -108,20 +116,17 @@ export const CampusWasteMap: React.FC<CampusWasteMapProps> = ({
       maxZoom: 19,
       maxBounds: SAU_CAMPUS_BOUNDS,
       maxBoundsViscosity: 0.9,
-      zoomControl: false
+      zoomControl: false,
+      attributionControl: false
     });
 
-    L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-      {
-        subdomains: 'abcd',
-        maxZoom: 20,
-        attribution: '&copy; OpenStreetMap &copy; CARTO'
-      }
-    ).addTo(map);
+    const initialTiles = L.tileLayer(STREET_TILE_URL, {
+      maxZoom: 19
+    }).addTo(map);
 
     const markersGroup = L.layerGroup().addTo(map);
     mapInstanceRef.current = map;
+    tileLayerRef.current = initialTiles;
     markersLayerRef.current = markersGroup;
 
     setTimeout(() => {
@@ -131,9 +136,25 @@ export const CampusWasteMap: React.FC<CampusWasteMapProps> = ({
     return () => {
       map.remove();
       mapInstanceRef.current = null;
+      tileLayerRef.current = null;
       markersLayerRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    if (tileLayerRef.current) {
+      tileLayerRef.current.remove();
+    }
+
+    const nextUrl = mapStyle === 'satellite' ? SATELLITE_TILE_URL : STREET_TILE_URL;
+    tileLayerRef.current = L.tileLayer(nextUrl, {
+      maxZoom: 19
+    }).addTo(map);
+    tileLayerRef.current.bringToBack();
+  }, [mapStyle]);
 
   useEffect(() => {
     const map = mapInstanceRef.current;
@@ -260,7 +281,24 @@ export const CampusWasteMap: React.FC<CampusWasteMapProps> = ({
         })}
       </div>
 
-      <div className="sau-map-shell">
+      <div className={`sau-map-shell ${mapStyle === 'street' ? 'apple-pastel' : ''}`}>
+        <div className="sau-map-style-switch" role="group" aria-label="Harita görünümü">
+          <button
+            type="button"
+            className={`sau-style-btn ${mapStyle === 'street' ? 'active' : ''}`}
+            onClick={() => setMapStyle('street')}
+          >
+            Harita
+          </button>
+          <button
+            type="button"
+            className={`sau-style-btn ${mapStyle === 'satellite' ? 'active' : ''}`}
+            onClick={() => setMapStyle('satellite')}
+          >
+            Uydu
+          </button>
+        </div>
+
         <div className="sau-map-controls">
           <button
             type="button"
